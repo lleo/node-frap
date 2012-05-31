@@ -44,14 +44,15 @@ cli.sk.on('connect', function() {
   log("connected")
   cli.frap = new Frap(cli.sk)
 
-  cli.frap.on('full', function(data) {
-    log(format("cli.frap.on 'data': data.length=%d;", data.length))
+  cli.frap.recvFrame(function(err, buf){
+    if (err) throw err
+    log(format("cli.frap.recvFrame cb: buf.length=%d;", buf.length))
     //log("data:", data.toString())
     var d = Date.now() - t0
       , tp = (cli.nbufs * cli.bufsz) / (d / 1000) / 1024 
     log(format("delta = %s ms", d.toPrecision(6)))
     log(format("thruput = %s kB/s", tp.toFixed(2)))
-
+    
     setTimeout(function(){
       cli.sk.end()
     }, 500)
@@ -60,12 +61,12 @@ cli.sk.on('connect', function() {
   buf = new Buffer(cli.bufsz)
   buf.fill(88) //88 == 'X'
   
-  t0 = Date.now()
-
   var bufs = []
   for (var i=0; i<cli.nbufs; i++) {
     bufs.push(buf)
   }
+
+  t0 = Date.now()
 
   cli.frap.send(bufs)
 })
