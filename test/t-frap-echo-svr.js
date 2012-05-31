@@ -59,7 +59,12 @@ svr.sk.on('connection', function(sk) {
   svr.client[ident].sk = sk
   svr.client[ident].frap = new Frap(sk)
   
-  svr.client[ident].frap.on('full', function(data, nreads) {
+//  svr.client[ident].frap.on('full', function(data, nreads) {
+//    log(format("FRAP: %s sent: data.length=%d; nreads=%d", ident, data.length, nreads))
+//    svr.client[ident].frap.send(data) //echo svr
+//  })
+  svr.client[ident].frap.recvFrame(function(err, data, nreads){
+    if (err) throw err
     log(format("FRAP: %s sent: data.length=%d; nreads=%d", ident, data.length, nreads))
     svr.client[ident].frap.send(data) //echo svr
   })
