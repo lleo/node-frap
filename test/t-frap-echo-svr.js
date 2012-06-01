@@ -10,11 +10,16 @@ var net = require('net')
   , repl = require('repl')
   , nomnom = require('nomnom')
 
+var VERBOSE = 0
 var opts = nomnom.script('t-frap-echo-svr')
   .option('verbose', {
     abbr: 'v'
   , flag: true
   , help: 'show more output'
+  , callback: function() {
+      Frap.VERBOSE++
+      VERBOSE++
+    }
   })
   .option('port', {
     abbr: 'p'

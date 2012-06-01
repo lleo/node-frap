@@ -6,15 +6,21 @@ var net = require('net')
   , log = console.log
   , format = util.format
   , inspect = util.inspect
-  , Frap = require('frap').Frap
+  , frap = require('frap')
+  , Frap = frap.Frap
   , repl = require('repl')
   , nomnom = require('nomnom')
 
-var opts = nomnom.script('t-frap-echo-partial-svr')
+var VERBOSE = 0
+var opts = nomnom.script('t-frap-echo-pipe-svr')
   .option('verbose', {
     abbr: 'v'
   , flag: true
   , help: 'show more output'
+  , callback: function() {
+      Frap.VERBOSE++
+      VERBOSE++
+    }
   })
   .option('port', {
     abbr: 'p'
@@ -30,7 +36,10 @@ process.on('SIGINT', function () {
 })
 
 //REALTIME MONITORING
-var root = { svrid : "localhost:"+opts.port }
+var root = {
+  svrid : "localhost:"+opts.port
+, frap: frap
+}
 net.createServer(function(sk){
   //spawned when another terminal `socat STDIN ./repl.sk`
   // or better yet `socat READLINE ./repl.sk`
@@ -44,9 +53,9 @@ net.createServer(function(sk){
   replobj.context.root = root
   
 //}).listen(7001)
-}).listen('./t-frap-echo-partial-svr.repl.sk')
+}).listen('./t-frap-echo-pipe-svr.repl.sk')
 process.on('exit', function() {
-  fs.unlinkSync('./t-frap-echo-partial-svr.repl.sk')
+  fs.unlinkSync('./t-frap-echo-pipe-svr.repl.sk')
 })
 
 var svr = {port: opts.port, verbose: opts.verbose}
