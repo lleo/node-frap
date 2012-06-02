@@ -137,7 +137,6 @@ function slowSend(sk, buf, nb, wait, cb) { //nb == number of bytes to per send
       return
     }
     var rv = sk.write(buf.slice(off, end))
-    if (VERBOSE) process.stdout.write('.')
     off += nb
     if (off > buf.length) {
       cb()
