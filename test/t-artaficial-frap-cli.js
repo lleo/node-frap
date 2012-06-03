@@ -21,8 +21,8 @@ var opts = nomnom.script('t-frap-cli')
   , flag: true
   , help: 'show more output'
   , callback: function() {
-      Frap.VERBOSE++
-      VERBOSE++
+      VERBOSE += 1
+      if (VERBOSE>1) Frap.VERBOSE++
     }
   })
   .option('port', {
@@ -55,11 +55,17 @@ var opts = nomnom.script('t-frap-cli')
   , default: undefined
   , help: 'delay between writes: default undefined (means no delay)'
   })
+  .option('print_msg', {
+    abbr: 'p'
+  , default: false
+  , help: 'print the message received'
+  })
   .parse()
 
 var cli = {
   port    : opts.port
 , verbose : VERBOSE
+, printmsg: opts.print_msg
 , nbufs   : opts.nbufs
 , bufsz   : opts.bufsz
 , bpw     : opts.bytes_per_write
@@ -87,7 +93,8 @@ cli.sk.on('connect', function() {
 //      logf(format("thruput = %s kB/s", tp.toFixed(2)))
 //    }
 
-    log("received:", buf.toString('ascii'))
+    if (cli.printmsg)
+      log("received:", buf.toString('ascii'))
 
     setTimeout(function(){
       if (!cli.ended) {
@@ -132,13 +139,11 @@ function slowSend(sk, buf, nb, wait, cb) { //nb == number of bytes to per send
   function send() {
     var end = off+nb
     if (end > buf.length) { end = buf.length }
-    if (off === end) {
-      if (VERBOSE) log("off === end")
-      return
-    }
+
     var rv = sk.write(buf.slice(off, end))
+
     off += nb
-    if (off > buf.length) {
+    if (off >= buf.length) {
       cb()
       return
     }
