@@ -6,11 +6,16 @@ var net = require('net')
   , Frap = require('frap').Frap
   , nomnom = require('nomnom')
 
+var VERBOSE=0
 var opts = nomnom.script('t-frap-cli')
   .option('verbose', {
     abbr: 'v'
   , flag: true
   , help: 'show more output'
+  , callback: function() {
+    VERBOSE += 1
+    if (VERBOSE) Frap.VERBOSE += 1
+  }
   })
   .option('port', {
     abbr: 'p'
