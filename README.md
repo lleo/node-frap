@@ -1,6 +1,5 @@
 Frap - Framing Wrapper
 ======================
-test
 
   var net = require('net')
     , frap = require('frap')
