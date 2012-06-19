@@ -1,7 +1,7 @@
 {
   "name"  : "frap"
 , "main"  : "./lib/index.js"
-, "version" : "1.0.0"
+, "version" : "0.9.0"
 , "engines" : {"node" : ">=0.4.0"}
 , "dependencies" : {}
 }
