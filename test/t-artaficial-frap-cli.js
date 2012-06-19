@@ -57,6 +57,7 @@ var opts = nomnom.script('t-frap-cli')
   })
   .option('print_msg', {
     abbr: 'p'
+  , flag: true
   , default: false
   , help: 'print the message received'
   })
@@ -80,18 +81,10 @@ cli.sk.on('connect', function() {
 
   var buf, t0
 
-  cli.frap = new Frap(cli.sk)
+  cli.frap = new Frap(cli.sk, true)
 
-  cli.frap.recvFrame(function(err, buf){
-    if (err) throw err
-    if (VERBOSE) logf("cli.frap.recvFrame cb: buf.length=%d;", buf.length)
-
-//    var d = Date.now() - t0
-//      , tp = (cli.nbufs * cli.bufsz) / (d / 1000) / 1024 
-//    if (VERBOSE) {
-//      logf(format("delta = %s ms", d.toPrecision(6)))
-//      logf(format("thruput = %s kB/s", tp.toFixed(2)))
-//    }
+  cli.frap.on('frame', function(buf){
+    if (VERBOSE) logf("cli.frap.on 'frame': buf.length=%d;", buf.length)
 
     if (cli.printmsg)
       log("received:", buf.toString('ascii'))

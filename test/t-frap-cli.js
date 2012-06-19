@@ -6,6 +6,8 @@ var net = require('net')
   , Frap = require('frap').Frap
   , nomnom = require('nomnom')
 
+var logf = function() { log(format.apply(this, arguments)) }
+
 var VERBOSE=0
 var opts = nomnom.script('t-frap-cli')
   .option('verbose', {
@@ -14,7 +16,11 @@ var opts = nomnom.script('t-frap-cli')
   , help: 'show more output'
   , callback: function() {
     VERBOSE += 1
-    if (VERBOSE) Frap.VERBOSE += 1
+    if (VERBOSE) {
+      Frap.VERBOSE += 1
+      Frap.RFrameStream.VERBOE += 1
+      Frap.WFrameStream.VERBOE += 1
+    }
   }
   })
   .option('port', {
@@ -33,6 +39,12 @@ var opts = nomnom.script('t-frap-cli')
   , default: Math.pow(10,7)
   , help: 'size in bytes of each buffer send; default:10000000'
   })
+  .option('fresh', {
+    abbr: 'f'
+  , flag: true
+  , default: false
+  , help: 'alloc fresh Buffer for each nbuf'
+  })
   .parse()
 
 var cli = {
@@ -40,47 +52,61 @@ var cli = {
 , verbose: opts.verbose
 , nbufs: opts.nbufs
 , bufsz: opts.bufsz
+, fresh: opts.fresh
 }
 
 cli.sk = net.createConnection(cli.port)
 
 cli.sk.on('connect', function() {
-  var buf, t0
   log("connected")
-  cli.frap = new Frap(cli.sk)
+  cli.frap = new Frap(cli.sk, true)
 
-  cli.frap.recvFrame(function(err, buf){
-    if (err) throw err
-    log(format("cli.frap.recvFrame cb: buf.length=%d;", buf.length))
-    //log("data:", data.toString())
+  cli.frap.on('frame', function(buf){
+    log(format("cli.frap.on 'frame': buf.length=%d;", buf.length))
     var d = Date.now() - t0
       , tp = (cli.nbufs * cli.bufsz) / (d / 1000) / 1024 
-    log(format("delta = %s ms", d.toPrecision(6)))
-    log(format("thruput = %s kB/s", tp.toFixed(2)))
-    
-    setTimeout(function(){
-      cli.sk.end()
-    }, 500)
+    logf("Time-to-recv = %d ms", d)
+    logf("thruput = %s kB/s", tp.toFixed(2))
+
+    buf = undefined
+
+    cli.sk.end()
+    //setTimeout(function(){
+    //  log("Timeout called")
+    //  //cli.sk.end()
+    //  //cli.sk.destroySoon()
+    //}, 500)
   })
 
-  buf = new Buffer(cli.bufsz)
-  buf.fill(88) //88 == 'X'
-  
-  var bufs = []
+  var bufs = [], buf, t0
   for (var i=0; i<cli.nbufs; i++) {
+    if (cli.fresh) {
+      buf = new Buffer(cli.bufsz)
+      buf.fill(88) //88 == 'X'
+    }
+    else {
+      if (!buf) {
+        buf = new Buffer(cli.bufsz)
+        buf.fill(88) //88 == 'X'
+      }
+    }
     bufs.push(buf)
   }
 
   t0 = Date.now()
 
-  cli.frap.send(bufs)
+  cli.frap.send(bufs, function() {
+    var d = Date.now() - t0
+    logf("Time-to-send = %d ms", d)
+  })
+  bufs = []
 })
 
 cli.sk.on('error', function(err) {
   log("error:", err)
 })
 
-cli.sk.on('end', function() {
+cli.sk.once('end', function() {
   log("end")
   delete cli.frap
   cli.sk.end()

@@ -48,6 +48,7 @@ svr.sk.on('connection', function(sk){
   svr.client[ident] = {}
   svr.client[ident].sk = sk
   svr.client[ident].chan = new Channel(sk)
+  log("new Channel", ident)
   
   svr.client[ident].chan.onAny(function(buf){
     log("topic :", this.event)

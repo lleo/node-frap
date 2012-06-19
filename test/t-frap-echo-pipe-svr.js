@@ -11,6 +11,8 @@ var net = require('net')
   , repl = require('repl')
   , nomnom = require('nomnom')
 
+var logf = function() { log(format.apply(this, arguments)) }
+
 var VERBOSE = 0
 var opts = nomnom.script('t-frap-echo-pipe-svr')
   .option('verbose', {
@@ -18,14 +20,18 @@ var opts = nomnom.script('t-frap-echo-pipe-svr')
   , flag: true
   , help: 'show more output'
   , callback: function() {
-      Frap.VERBOSE++
-      VERBOSE++
+      VERBOSE += 1
+      if (VERBOSE) {
+        Frap.VERBOSE += 1
+        Frap.RFrameStream.VERBOSE += 1
+        Frap.WFrameStream.VERBOSE += 1
+      }
     }
   })
   .option('port', {
     abbr: 'p'
   , flag: false
-  , default: 7000
+  , "default": 7000
   , help: 'listen port'
   })
   .parse()
@@ -74,9 +80,9 @@ svr.sk.on('connection', function(sk) {
   var ident = sk.remoteAddress+":"+sk.remotePort
   svr.client[ident] = {}
   svr.client[ident].sk = sk
-  svr.client[ident].frap = new Frap(sk, true)
+  svr.client[ident].frap = new Frap(sk)
 
-  svr.client[ident].frap.on('frame', function(rstream, framelen){
+  svr.client[ident].frap.on('begin', function(rstream, framelen){
     var wstream = svr.client[ident].frap.createWriteStream(framelen)
     rstream.pipe(wstream)
   })
@@ -84,7 +90,7 @@ svr.sk.on('connection', function(sk) {
   svr.client[ident].sk.on('end', function() {
     svr.client[ident].sk.end()
     log(ident+" disconnected")
-    delete svr.client[ident]
+    ;delete svr.client[ident]
   })
 })
 

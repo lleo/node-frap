@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+process.argv[0] = 't-frap-echo-svr'
+
 var net = require('net')
   , util = require('util')
   , fs = require('fs')
@@ -10,6 +12,8 @@ var net = require('net')
   , repl = require('repl')
   , nomnom = require('nomnom')
 
+var logf = function() { log(format.apply(this, arguments)) }
+
 var VERBOSE = 0
 var opts = nomnom.script('t-frap-echo-svr')
   .option('verbose', {
@@ -17,8 +21,12 @@ var opts = nomnom.script('t-frap-echo-svr')
   , flag: true
   , help: 'show more output'
   , callback: function() {
-      Frap.VERBOSE++
-      VERBOSE++
+      VERBOSE += 1
+      if (VERBOSE) {
+        Frap.VERBOSE += 1
+        Frap.RFrameStream.VERBOSE += 1
+        Frap.WFrameStream.VERBOSE += 1
+      }
     }
   })
   .option('port', {
@@ -62,16 +70,12 @@ svr.sk.on('connection', function(sk) {
   var ident = sk.remoteAddress+":"+sk.remotePort
   svr.client[ident] = {}
   svr.client[ident].sk = sk
-  svr.client[ident].frap = new Frap(sk)
+  svr.client[ident].frap = new Frap(sk, true)
   
-//  svr.client[ident].frap.on('full', function(data, nreads) {
-//    log(format("FRAP: %s sent: data.length=%d; nreads=%d", ident, data.length, nreads))
-//    svr.client[ident].frap.send(data) //echo svr
-//  })
-  svr.client[ident].frap.recvFrame(function(err, data, nreads){
-    if (err) throw err
-    log(format("FRAP: %s sent: data.length=%d; nreads=%d", ident, data.length, nreads))
-    svr.client[ident].frap.send(data) //echo svr
+  svr.client[ident].frap.on('frame', function(buf){
+    //log(format("FRAP: %s sent: buf.length=%d;", ident, buf.length))
+    svr.client[ident].frap.send(buf)
+    buf = undefined
   })
   
   svr.client[ident].sk.on('close', function() {
