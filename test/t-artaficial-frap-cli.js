@@ -12,8 +12,6 @@ var net = require('net')
 
 //frap.setVerbosity(2)
 
-var logf = function() { log(format.apply(this, arguments)) }
-
 var VERBOSE = 0
 var opts = nomnom.script('t-frap-cli')
   .option('verbose', {
@@ -84,7 +82,7 @@ cli.sk.on('connect', function() {
   cli.frap = new Frap(cli.sk, true)
 
   cli.frap.on('frame', function(buf){
-    if (VERBOSE) logf("cli.frap.on 'frame': buf.length=%d;", buf.length)
+    if (VERBOSE) log("cli.frap.on 'frame': buf.length=%d;", buf.length)
 
     if (cli.printmsg)
       log("received:", buf.toString('ascii'))
@@ -106,7 +104,7 @@ cli.sk.on('connect', function() {
   t0 = Date.now()
 
   if (cli.bpw && cli.delay) {
-    if (VERBOSE>1) logf("bpw = %d; delay=%d;", cli.bpw, cli.delay)
+    if (VERBOSE>1) log("bpw = %d; delay=%d;", cli.bpw, cli.delay)
     slowSend(cli.sk, buf, cli.bpw, cli.delay, function(){
       if (VERBOSE) log("slowSend done")
     })

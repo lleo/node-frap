@@ -1,32 +1,52 @@
 Frap - Framing Wrapper
 ======================
 
-  var net = require('net')
-    , frap = require('frap')
-    , svr = {}
-  
-  svr.sk = net.createServer().listen(7000)
-  svr.chan = {}
-  svr.sk.on('connection', funtion(sk){
-    var chan = new frap.Channel(sk)
-    svr.chan[chan.id] = chan
-    chan.on('header', function(framelen, stream) {
-      stream.on('data', function() {})
+### server.js
+    var net = require('net')
+      , Frap = require('frap').Frap
+      , svr = {frap: {}}
+    
+    svr.sk = net.createServer().listen(7000)
+    
+    svr.sk.on('connection', function(sk){
+      var frap = new Frap(sk)
+      svr.frap[frap.id] = frap
+      frap.on('frame', function(buf) {
+        //simple echo
+        frap.send(buf)
+      })
+      frap.on('end', function() {
+        delete svr.frap[frap.id]
+      })
     })
-  })
   
-  //Echo w/partials (previous terminology)
-  frap.on('frame', function(rstream, framelen) {
-    wstream = frap.start(framelen)
-    rstream.pipe(wstream)
-  })
-  
-## API
+### client.js
+    var net = require('net')
+      , Frap = require('frap').Frap
+      , cli = {}
+    
+    cli.msg = {cmd: "print", args: ["hello", "world"]}
+    
+    cli.sk = net.createConnection(7000, function() {
+      cli.frap = new Frap(cli.sk)
+    
+      cli.frap.on('frame', function(buf) {
+        var msg = JSON.parse(buf.toString('utf8'))
+        console.log("recv:", msg)
+        cli.frap.end()
+      })
+    
+      cli.frap.send(new Buffer(JSON.stringify(cli.msg), 'utf8'))
+    })
+
+API
+---
 
 ### Constructor
 
   frap = new Frap(src) //src could be a net.Socket or any read/write Stream
 
+### Events
   frap.on('frame', function(rstream, framelen) {
     rstream.on('data', function(buf){ ... })
   })

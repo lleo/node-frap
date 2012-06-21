@@ -12,8 +12,6 @@ var net = require('net')
   , repl = require('repl')
   , nomnom = require('nomnom')
 
-var logf = function() { log(format.apply(this, arguments)) }
-
 var VERBOSE = 0
 var opts = nomnom.script('t-frap-echo-svr')
   .option('verbose', {
@@ -68,9 +66,11 @@ svr.sk.on('listening', function() {
 
 svr.sk.on('connection', function(sk) {
   var ident = sk.remoteAddress+":"+sk.remotePort
+  log(ident+" connected")
+
   svr.client[ident] = {}
   svr.client[ident].sk = sk
-  svr.client[ident].frap = new Frap(sk, true)
+  svr.client[ident].frap = new Frap(sk)
   
   svr.client[ident].frap.on('frame', function(buf){
     //log(format("FRAP: %s sent: buf.length=%d;", ident, buf.length))

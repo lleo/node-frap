@@ -6,8 +6,6 @@ var net = require('net')
   , Frap = require('frap').Frap
   , nomnom = require('nomnom')
 
-var logf = function() { log(format.apply(this, arguments)) }
-
 var VERBOSE=0
 var opts = nomnom.script('t-frap-cli')
   .option('verbose', {
@@ -59,14 +57,14 @@ cli.sk = net.createConnection(cli.port)
 
 cli.sk.on('connect', function() {
   log("connected")
-  cli.frap = new Frap(cli.sk, true)
+  cli.frap = new Frap(cli.sk)
 
   cli.frap.on('frame', function(buf){
     log(format("cli.frap.on 'frame': buf.length=%d;", buf.length))
     var d = Date.now() - t0
       , tp = (cli.nbufs * cli.bufsz) / (d / 1000) / 1024 
-    logf("Time-to-recv = %d ms", d)
-    logf("thruput = %s kB/s", tp.toFixed(2))
+    log("Time-to-recv = %d ms", d)
+    log("thruput = %s kB/s", tp.toFixed(2))
 
     buf = undefined
 
@@ -94,11 +92,11 @@ cli.sk.on('connect', function() {
   }
 
   t0 = Date.now()
-
-  cli.frap.send(bufs, function() {
+  cli.frap.once('drain', function() {
     var d = Date.now() - t0
-    logf("Time-to-send = %d ms", d)
+    log("Time-to-send = %d ms", d)
   })
+  cli.frap.send(bufs)
   bufs = []
 })
 

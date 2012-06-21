@@ -11,8 +11,6 @@ var net = require('net')
   , repl = require('repl')
   , nomnom = require('nomnom')
 
-var logf = function() { log(format.apply(this, arguments)) }
-
 var VERBOSE = 0
 var opts = nomnom.script('t-frap-echo-pipe-svr')
   .option('verbose', {
@@ -78,9 +76,11 @@ svr.sk.on('listening', function() {
 
 svr.sk.on('connection', function(sk) {
   var ident = sk.remoteAddress+":"+sk.remotePort
+  log(ident+" connected")
+
   svr.client[ident] = {}
   svr.client[ident].sk = sk
-  svr.client[ident].frap = new Frap(sk)
+  svr.client[ident].frap = new Frap(sk, false)
 
   svr.client[ident].frap.on('begin', function(rstream, framelen){
     var wstream = svr.client[ident].frap.createWriteStream(framelen)
@@ -88,7 +88,7 @@ svr.sk.on('connection', function(sk) {
   })
 
   svr.client[ident].sk.on('end', function() {
-    svr.client[ident].sk.end()
+    //svr.client[ident].sk.end()
     log(ident+" disconnected")
     ;delete svr.client[ident]
   })
