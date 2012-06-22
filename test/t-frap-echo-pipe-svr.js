@@ -19,7 +19,7 @@ var opts = nomnom.script('t-frap-echo-pipe-svr')
   , help: 'show more output'
   , callback: function() {
       VERBOSE += 1
-      if (VERBOSE) {
+      if (VERBOSE>1) {
         Frap.VERBOSE += 1
         Frap.RFrameStream.VERBOSE += 1
         Frap.WFrameStream.VERBOSE += 1

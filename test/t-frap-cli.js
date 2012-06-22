@@ -14,7 +14,7 @@ var opts = nomnom.script('t-frap-cli')
   , help: 'show more output'
   , callback: function() {
     VERBOSE += 1
-    if (VERBOSE) {
+    if (VERBOSE>1) {
       Frap.VERBOSE += 1
       Frap.RFrameStream.VERBOE += 1
       Frap.WFrameStream.VERBOE += 1
