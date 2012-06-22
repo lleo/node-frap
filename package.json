@@ -1,7 +1,18 @@
 {
-  "name"  : "frap"
-, "main"  : "./lib/index.js"
-, "version" : "0.9.0"
-, "engines" : {"node" : ">=0.4.0"}
-, "dependencies" : {}
+  "name"        : "frap"
+, "main"        : "./lib/index.js"
+, "version"     : "0.9.0"
+, "description" : "A Socket wrapper that provides simple framing protocol"
+, "keywords"    : ["socket", "frame", "framing", "protocol"]
+, "homepage"    : "https://github.com/lleo/node-frap"
+, "bugs"        : { "url": "https://github.com/lleo/node-frap/issues"
+                  , "email": "lleoem@gmail.com" }
+, "author"      : { "name": "LLeo"
+                  , "email": "lleoem@gmail.com"
+                  , "url": "http://lleo-blog.blogspot.com/" }
+, "files"       : [ "README.md", "package.json", "lib", "examples", "test" ]
+, "main"        : "lib/index.js"
+, "dependencies": {}
+, "devDependencies": { "nomnom": ">=1.5.1" }
+, "engines"     : {"node" : ">=0.4.0"}
 }
