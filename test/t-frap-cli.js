@@ -21,8 +21,14 @@ var opts = nomnom.script('t-frap-cli')
     }
   }
   })
+  .option('host', {
+    abbr: 'H'
+  , flag: false
+  , default: '127.0.0.1'
+  , help: 'connect host'
+  })
   .option('port', {
-    abbr: 'p'
+    abbr: 'P'
   , flag: false
   , default: 7000
   , help: 'connect port'
@@ -47,13 +53,15 @@ var opts = nomnom.script('t-frap-cli')
 
 var cli = {
   port: opts.port
+, host: opts.host
 , verbose: opts.verbose
 , nbufs: opts.nbufs
 , bufsz: opts.bufsz
 , fresh: opts.fresh
 }
 
-cli.sk = net.createConnection(cli.port)
+log("cli.sk = net.createConnection(%d, %s)", cli.port, cli.host)
+cli.sk = net.createConnection(cli.port, cli.host)
 
 cli.sk.on('connect', function() {
   log("connected")
