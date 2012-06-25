@@ -114,8 +114,11 @@ cli.sk.on('error', function(err) {
 
 cli.sk.once('end', function() {
   log("end")
-  delete cli.frap
-  cli.sk.end()
-  delete cli.sk
+  //cli.sk.end()
 })
 
+cli.sk.once('close', function() {
+  log("close")
+  delete cli.frap
+  delete cli.sk
+})
