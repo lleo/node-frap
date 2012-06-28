@@ -84,6 +84,10 @@ net.createServer(function(sk){
 process.on('exit', function() {
   fs.unlinkSync('./t-frap-echo-pipe-svr.repl.sk')
 })
+process.on('uncaughtException', function(err){
+  log("uncaught", err)
+  process.nextTick(function(){process.exit(1)})
+})
 
 var svr = {port: opts.port, verbose: opts.verbose}
 root.svr = svr
