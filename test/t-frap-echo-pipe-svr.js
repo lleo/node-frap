@@ -120,22 +120,24 @@ svr.sk.on('connection', function(sk) {
 
   var part_done
   svr.client[ident].frap.on('begin', function(rstream, framelen){
-    //Setup stats
-    stats.get('frame_sz').set(framelen)
+    if (opt.stats) {
+      //Setup stats
+      stats.get('frame_sz').set(framelen)
 
-    part_done = stats.get('tbfp').start()
-    rstream.on('data', function(buf, off){
-      part_done()
-      if (buf.length+off !== framelen) //if this is not the last part
-        part_done = stats.get('tbfp').start()
-        
-      stats.get('part_sz').set(buf.length)
-    })
+      part_done = stats.get('tbfp').start()
+      rstream.on('data', function(buf, off){
+        part_done()
+        if (buf.length+off !== framelen) //if this is not the last part
+          part_done = stats.get('tbfp').start()
 
-    var done = stats.get('ttcf').start()
-    rstream.on('end', function(buf, off){
-      done()
-    })
+        stats.get('part_sz').set(buf.length)
+      })
+
+      var done = stats.get('ttcf').start()
+      rstream.on('end', function(buf, off){
+        part_done()
+      })
+    }
 
     //Setup echo pipe
     var wstream = svr.client[ident].frap.createWriteStream(framelen)
