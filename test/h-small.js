@@ -55,10 +55,10 @@ process.on('SIGINT', function () {
     log( sts.toString({value: 'both'}) )
   process.nextTick(function(){ process.exit(0) })
 })
-process.on('uncaughtException', function(err){
-  log("caught:", err)
-  process.nextTick(function(){ process.exit(1) })
-})
+//process.on('uncaughtException', function(err){
+//  log("caught:", err)
+//  process.nextTick(function(){ process.exit(1) })
+//})
 
 var cli = {
   iters: opt.iters
@@ -148,26 +148,29 @@ cli.sk.once('close', function(had_error) {
 })
 
 if (opt.stats) {
-  cli.sk.on('connect', function() {
-    stats.createStat('sk recv size', statsmod.Value)
-    stats.createStat('sk recv gap', statsmod.Timer, {units:'bytes'})
-    stats.createHog('sk recv size semi', 'sk recv size', statsmod.SemiBytes)
-//    stats.createHog('sk recv size log', 'sk recv size', statsmod.LogBytes)
-    stats.createHog('sk recv gap', 'sk recv gap', statsmod.SemiLogMS)
+  var statsmod = require('stats')
+    , stats = statsmod.getStats()
 
+  stats.createStat('sk recv size', statsmod.Value)
+  stats.createStat('sk recv gap', statsmod.Timer, {units:'bytes'})
+  stats.createHog('sk recv size semi', 'sk recv size', statsmod.SemiBytes)
+  //stats.createHog('sk recv size log', 'sk recv size', statsmod.LogBytes)
+  stats.createHog('sk recv gap', 'sk recv gap', statsmod.SemiLogMS)
+
+  stats.createStat('frap recv gap', statsmod.Timer)
+  stats.createStat('frap part size', statsmod.Value, {units:'bytes'})
+  stats.createHog('frap recv size', 'sk recv size', statsmod.SemiBytes)
+  stats.createHog('frap recv gap', 'sk recv gap', statsmod.SemiLogMS)
+
+  cli.sk.on('connect', function() {
     var sk_tm
     cli.sk.on('data', function(buf) {
       if (sk_tm) sk_tm()
       sk_tm = stats.get('sk recv gap').start()
       stats.get('sk recv size').set(buf.length)
     })
-    
+
     assert(cli.frap, "cli.frap not set")
-    stats.createStat('frap recv gap', statsmod.Timer)
-    stats.createStat('frap part size', statsmod.Value, {units:'bytes'})
-    stats.createHog('frap recv size', 'sk recv size', statsmod.SemiBytes)
-    stats.createHog('frap recv gap', 'sk recv gap', statsmod.SemiLogMS)
-    
     var frap_tm, cur_framelen
     cli.frap.on('begin', function(rstream, framelen){
       cur_framelen = framelen
