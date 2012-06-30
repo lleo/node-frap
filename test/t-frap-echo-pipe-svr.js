@@ -10,10 +10,9 @@ var net = require('net')
   , Frap = frap.Frap
   , repl = require('repl')
   , nomnom = require('nomnom')
-  , stats = require('stats')
 
 var VERBOSE = 0
-var opts = nomnom.script('t-frap-echo-pipe-svr')
+var opt = nomnom.script('t-frap-echo-pipe-svr')
   .option('verbose', {
     abbr: 'v'
   , flag: true
@@ -34,38 +33,46 @@ var opts = nomnom.script('t-frap-echo-pipe-svr')
   , "default": 7000
   , help: 'listen port'
   })
+  .option('stats', {
+    abbr: 'S'
+  , flag: false
+  , default: true
+  , help: 'turn on stats collection and report via SIGUSR1'
+  })
   .parse()
 
-if (VERBOSE)
+if (opt.stats) {
   log("PID=%d", process.pid)
 
-// Setup stats
-var sts = stats.getStats()
-sts.createStat('ttcf', stats.Timer) //time-to-complete-frame
-sts.createStat('time_btw_part', stats.Timer)
-sts.createStat('part_sz', stats.Value)
-sts.createStat('frame_sz', stats.Value)
-sts.createHOG('ttcf SemiLogMS', sts.get('ttcf'), stats.SemiLogMS)
-sts.createHOG('time_btw_part SemiLogMS', sts.get('time_btw_part'), stats.SemiLogMS)
-sts.createHOG('part_sz LogBytes' , sts.get('part_sz' ), stats.LogBytes)
-sts.createHOG('frame_sz LogBytes', sts.get('frame_sz'), stats.LogBytes)
+  // Setup stats
+  var statsmod = require('stats')
 
+  var stats = statsmod.getStats()
+  stats.createStat('ttcf', statsmod.Timer) //time-to-complete-frame
+  stats.createStat('tbfp', statsmod.Timer)
+  stats.createStat('part_sz', statsmod.Value)
+  stats.createStat('frame_sz', statsmod.Value)
+  stats.createHOG('ttcf SemiLogMS', stats.get('ttcf'), statsmod.SemiLogMS)
+  stats.createHOG('tbfp SemiLogMS', stats.get('tbfp'), statsmod.SemiLogMS)
+  stats.createHOG('part_sz LogBytes' , stats.get('part_sz' ), statsmod.LogBytes)
+  stats.createHOG('frame_sz LogBytes', stats.get('frame_sz'), statsmod.LogBytes)
+}
 process.on('SIGUSR1', function(){
-  log( sts.toString({values: 'both'}) )
+  log( stats.toString({values: 'both'}) )
 })
 
 process.on('SIGINT', function () {
   log('caught SIGINT')
-  log( sts.toString({values: 'both'}))
+  log( stats.toString({values: 'both'}))
   process.exit(0)
 })
 
 
 //REALTIME MONITORING
 var root = {
-  svrid : "localhost:"+opts.port
+  svrid : "localhost:"+opt.port
 , frap: frap
-, stats: sts
+, stats: stats
 }
 net.createServer(function(sk){
   //spawned when another terminal `socat STDIN ./repl.sk`
@@ -89,7 +96,7 @@ process.on('uncaughtException', function(err){
   process.nextTick(function(){process.exit(1)})
 })
 
-var svr = {port: opts.port, verbose: opts.verbose}
+var svr = {port: opt.port, verbose: opt.verbose}
 root.svr = svr
 
 svr.client = {}
@@ -114,18 +121,18 @@ svr.sk.on('connection', function(sk) {
   var part_done
   svr.client[ident].frap.on('begin', function(rstream, framelen){
     //Setup stats
-    sts.get('frame_sz').set(framelen)
+    stats.get('frame_sz').set(framelen)
 
-    part_done = sts.get('time_btw_part').start()
+    part_done = stats.get('tbfp').start()
     rstream.on('data', function(buf, off){
       part_done()
       if (buf.length+off !== framelen) //if this is not the last part
-        part_done = sts.get('time_btw_part').start()
+        part_done = stats.get('tbfp').start()
         
-      sts.get('part_sz').set(buf.length)
+      stats.get('part_sz').set(buf.length)
     })
 
-    var done = sts.get('ttcf').start()
+    var done = stats.get('ttcf').start()
     rstream.on('end', function(buf, off){
       done()
     })

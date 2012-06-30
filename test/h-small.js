@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 var net = require('net')
+  , assert = require('assert')
   , log = console.log
   , format = require('util').format
   , inspect = require('util').inspect
@@ -35,8 +36,29 @@ var opt = nomnom.script('t-frap-cli')
   , default: 1000
   , help: 'number of iterations of test to run'
   })
+  .option('stats', {
+    abbr: 'S'
+  , flag: false
+  , default: true
+  , help: 'turn on stats collection and report via SIGUSR1'
+  })
   .parse()
 
+process.on('SIGUSR1', function(){
+  if (opt.stats)
+    log( sts.toString({values: 'both'}) )
+})
+
+process.on('SIGINT', function () {
+  log('caught SIGINT')
+  if (opt.stats)
+    log( sts.toString({value: 'both'}) )
+  process.nextTick(function(){ process.exit(0) })
+})
+process.on('uncaughtException', function(err){
+  log("caught:", err)
+  process.nextTick(function(){ process.exit(1) })
+})
 
 var cli = {
   iters: opt.iters
@@ -124,3 +146,46 @@ cli.sk.once('close', function(had_error) {
     _end()
   }
 })
+
+if (opt.stats) {
+  cli.sk.on('connect', function() {
+    stats.createStat('sk recv size', statsmod.Value)
+    stats.createStat('sk recv gap', statsmod.Timer, {units:'bytes'})
+    stats.createHog('sk recv size semi', 'sk recv size', statsmod.SemiBytes)
+//    stats.createHog('sk recv size log', 'sk recv size', statsmod.LogBytes)
+    stats.createHog('sk recv gap', 'sk recv gap', statsmod.SemiLogMS)
+
+    var sk_tm
+    cli.sk.on('data', function(buf) {
+      if (sk_tm) sk_tm()
+      sk_tm = stats.get('sk recv gap').start()
+      stats.get('sk recv size').set(buf.length)
+    })
+    
+    assert(cli.frap, "cli.frap not set")
+    stats.createStat('frap recv gap', statsmod.Timer)
+    stats.createStat('frap part size', statsmod.Value, {units:'bytes'})
+    stats.createHog('frap recv size', 'sk recv size', statsmod.SemiBytes)
+    stats.createHog('frap recv gap', 'sk recv gap', statsmod.SemiLogMS)
+    
+    var frap_tm, cur_framelen
+    cli.frap.on('begin', function(rstream, framelen){
+      cur_framelen = framelen
+      frap_tm = stats.get('frap recv gap').start()
+    })
+    cli.frap.on('part', function(buf, sofar){
+      if (buf.length + sofar === cur_framelen) {
+        //last buf
+        frap_tm()
+      }
+      else {
+        frap_tm()
+        frap_tm = stats.get('frap recv gap').start()
+      }
+      stats.get('frap part size').set(buf.length)
+    })
+  })
+  cli.sk.once('end', function() {
+    log(stats.toString({values:'both'}))
+  })
+}
