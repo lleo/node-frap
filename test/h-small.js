@@ -44,11 +44,6 @@ var opt = nomnom.script('t-frap-cli')
   })
   .parse()
 
-process.on('SIGUSR1', function(){
-  if (opt.stats)
-    log( sts.toString({values: 'both'}) )
-})
-
 process.on('SIGINT', function () {
   log('caught SIGINT')
   if (opt.stats)
@@ -86,7 +81,7 @@ function start_sending() {
     str = JSON.stringify(o)
     buf = new Buffer(str, 'utf8')
 
-    cli.frap.send(buf)
+    cli.frap.sendFrame(buf)
     cli.outstanding[o.seq] = o
   }
   log("%s> sending done", cli.id)
@@ -150,6 +145,10 @@ cli.sk.once('close', function(had_error) {
 if (opt.stats) {
   var statsmod = require('stats')
     , stats = statsmod.getStats()
+
+  process.on('SIGUSR1', function(){
+    log( sts.toString({values: 'both'}) )
+  })
 
   stats.createStat('sk recv size', statsmod.Value)
   stats.createStat('sk recv gap', statsmod.Timer, {units:'bytes'})

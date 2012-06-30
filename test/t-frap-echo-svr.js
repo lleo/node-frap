@@ -84,6 +84,10 @@ net.createServer(function(sk){
 process.on('exit', function(){
   fs.unlinkSync('./t-frap-echo-svr.repl.sk')
 })
+process.on('uncaughtException', function(err){
+  log("uncaught", err)
+  process.nextTick(function(){process.exit(1)})
+})
 
 var svr = {port: opt.port, verbose: opt.verbose}
 root.svr = svr
@@ -132,7 +136,7 @@ svr.sk.on('connection', function(sk) {
 
   svr.client[ident].frap.on('frame', function(buf){
     //log(format("FRAP: %s sent: buf.length=%d;", ident, buf.length))
-    svr.client[ident].frap.send(buf)
+    svr.client[ident].frap.sendFrame(buf)
     buf = undefined
   })
 
