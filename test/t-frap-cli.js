@@ -56,8 +56,6 @@ var opt = nomnom.script('t-frap-cli')
   })
   .parse()
 
-log("PID=%d", process.pid)
-
 var cli = {
   port: opt.port
 , host: opt.host
