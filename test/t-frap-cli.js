@@ -17,8 +17,8 @@ var opt = nomnom.script('t-frap-cli')
     VERBOSE += 1
     if (VERBOSE>1) {
       Frap.VERBOSE += 1
-      Frap.RFrameStream.VERBOE += 1
-      Frap.WFrameStream.VERBOE += 1
+      Frap.RFrameStream.VERBOSE += 1
+      Frap.WFrameStream.VERBOSE += 1
     }
   }
   })

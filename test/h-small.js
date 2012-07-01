@@ -19,8 +19,8 @@ var opt = nomnom.script('t-frap-cli')
     VERBOSE += 1
     if (VERBOSE>1) {
       Frap.VERBOSE += 1
-      Frap.RFrameStream.VERBOE += 1
-      Frap.WFrameStream.VERBOE += 1
+      Frap.RFrameStream.VERBOSE += 1
+      Frap.WFrameStream.VERBOSE += 1
     }
   }
   })
@@ -92,7 +92,7 @@ cli.sk = net.createConnection(opt.port, function() {
   cli.frap = new Frap(cli.sk)
 
   function onDrain() {
-    log("%s> drain", cli.id)
+    //log("%s> drain", cli.id)
     cli.sk.end()
   }
   cli.frap.on('drain', onDrain)
