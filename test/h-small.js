@@ -9,6 +9,8 @@ var net = require('net')
   , nomnom = require('nomnom')
   , u = require('underscore')
 
+Frap.WFrameStream.VERBOSE += 1
+
 var VERBOSE=0
 var opt = nomnom.script('t-frap-cli')
   .option('verbose', {
@@ -28,7 +30,7 @@ var opt = nomnom.script('t-frap-cli')
     abbr: 'p'
   , flag: false
   , default: 7000
-  , help: 'connect port'
+  , help: 'connect port; default 7000'
   })
   .option('iters', {
     abbr: 'i'
@@ -47,7 +49,7 @@ var opt = nomnom.script('t-frap-cli')
 process.on('SIGINT', function () {
   log('caught SIGINT')
   if (opt.stats)
-    log( sts.toString({value: 'both'}) )
+    log( stats.toString({values: 'both'}) )
   process.nextTick(function(){ process.exit(0) })
 })
 //process.on('uncaughtException', function(err){
@@ -58,7 +60,8 @@ process.on('SIGINT', function () {
 var cli = {
   iters: opt.iters
 , frap: undefined
-, outstanding: []
+, sent: 0
+, recv: 0
 }
 
 var gen = (function(){ //just for a closure scope
@@ -72,51 +75,57 @@ var gen = (function(){ //just for a closure scope
   }
 })() //end scope
 
-function start_sending() {
-  log("%s> start_sending: iters=%d", cli.id, cli.iters)
-
-  var o, str, buf, i, t0
-  for (i=0; i<cli.iters; i++) {
-    o = gen()
-    str = JSON.stringify(o)
-    buf = new Buffer(str, 'utf8')
-
-    cli.frap.sendFrame(buf)
-    cli.outstanding[o.seq] = o
-  }
-  log("%s> sending done", cli.id)
-}
-
 cli.sk = net.createConnection(opt.port, function() {
+  //cli.sk.setMaxListeners(20)
+  //cli.sk.setNoDelay()
+
   cli.id = format("%s:%d", cli.sk.remoteAddress, cli.sk.remotePort)
   cli.frap = new Frap(cli.sk)
 
   function onDrain() {
-    //log("%s> drain", cli.id)
-    cli.sk.end()
+    log("%s> frap drain", cli.id)
+    log("h-small.js: calling sk.end() in frap.on 'drain'")
+    //cli.sk.end()
   }
   cli.frap.on('drain', onDrain)
 
+  //cli.intervalid = setInterval(function(){
+  //  log("cli.frap.pending=%d", cli.frap.pending.length)
+  //  log(inspect(cli.sk, false, 3))
+  //}, 1000)
+
   function onFrame(buf){
     var o = JSON.parse(buf.toString())
-    if (cli.outstanding[o.seq]) {
-      if (VERBOSE)
-        log("%s> received known o = %j", cli.id, o)
-      delete cli.outstanding[o.seq]
+    cli.recv += 1
+    if (cli.recv % 10000 === 0) {
+      log("cli.recv = %d", cli.recv)
     }
-    else {
-      log("%s> onFrame: unknown seq=%d", cli.id, o.seq)
+    if (cli.recv === cli.iters) {
+      log("received all sent: %d === %d", cli.sent, cli.iters)
+      cli.sk.end()
     }
   }
   cli.frap.on('frame', onFrame)
 
   function onError(err){
     log("%s> error:", cli.id, err)
+    log("h-small.js: calling sk.end() in frap.on('error', ...)")
     cli.sk.end()
   }
   cli.frap.on('error', onError)
 
-  start_sending(cli.frap, cli.iters)
+  var o, str, buf, i, t0, sent
+  for (i=0; i<cli.iters; i++) {
+    o = gen()
+    str = JSON.stringify(o)
+    buf = new Buffer(str, 'utf8')
+
+    sent = cli.frap.sendFrame(buf)
+    cli.sent += 1
+
+    //log("sendFrame returned %j", sent)
+  }
+  log("%s> sending done", cli.id)
 })
 
 function _end() {
@@ -130,6 +139,8 @@ function _end() {
 }
 cli.sk.once('end', function() {
   log("%s> end", cli.id)
+  log("h-small.js: calling sk.end() in sk.once('end', ...)")
+  if (cli.intervalid) clearInterval(cli.intervalid)
   cli.sk.end()
   _end()
 })
@@ -158,8 +169,8 @@ if (opt.stats) {
 
   stats.createStat('frap recv gap', statsmod.Timer)
   stats.createStat('frap part size', statsmod.Value, {units:'bytes'})
-  stats.createHog('frap recv size', 'sk recv size', statsmod.SemiBytes)
-  stats.createHog('frap recv gap', 'sk recv gap', statsmod.SemiLogMS)
+  stats.createHog('frap part size', 'frap part size', statsmod.SemiBytes)
+  stats.createHog('frap recv gap', 'frap recv gap', statsmod.SemiLogMS)
 
   cli.sk.on('connect', function() {
     var sk_tm
@@ -175,8 +186,8 @@ if (opt.stats) {
       cur_framelen = framelen
       frap_tm = stats.get('frap recv gap').start()
     })
-    cli.frap.on('part', function(buf, sofar){
-      if (buf.length + sofar === cur_framelen) {
+    cli.frap.on('part', function(buf, pos){
+      if (pos + buf.length === cur_framelen) {
         //last buf
         frap_tm()
       }
