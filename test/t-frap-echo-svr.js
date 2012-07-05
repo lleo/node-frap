@@ -36,8 +36,8 @@ var opt = nomnom.script('t-frap-echo-svr')
   })
   .option('stats', {
     abbr: 'S'
-  , flag: false
-  , default: true
+  , flag: true
+  , default: false
   , help: 'turn on stats collection and report via SIGUSR1'
   })
   .parse()

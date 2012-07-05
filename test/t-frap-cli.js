@@ -51,7 +51,9 @@ var opt = nomnom.script('t-frap-cli')
   , help: 'alloc fresh Buffer for each nbuf'
   })
   .option('stats', {
-    default: true
+    abbr: 'S'
+  , default: false
+  , flag: true
   , help: 'turn on stats collection and report via SIGUSR1'
   })
   .parse()
