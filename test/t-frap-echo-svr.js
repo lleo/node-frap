@@ -32,7 +32,7 @@ var opt = nomnom.script('t-frap-echo-svr')
     abbr: 'p'
   , flag: false
   , default: 7000
-  , help: 'listen port'
+  , help: 'listen port; default 7000'
   })
   .option('stats', {
     abbr: 'S'
