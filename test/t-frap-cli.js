@@ -32,7 +32,7 @@ var opt = nomnom.script('t-frap-cli')
     abbr: 'P'
   , flag: false
   , default: 7000
-  , help: 'connect port'
+  , help: 'connect port; default 7000'
   })
   .option('nbufs', {
     abbr: 'n'
@@ -87,6 +87,7 @@ cli.sk = net.connect(cli.port, cli.host, function() {
     buf = undefined
 
     cli.sk.end()
+
     //setTimeout(function(){
     //  log("Timeout called")
     //  //cli.sk.end()
