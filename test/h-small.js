@@ -40,8 +40,8 @@ var opt = nomnom.script('t-frap-cli')
   })
   .option('stats', {
     abbr: 'S'
-  , flag: false
-  , default: true
+  , flag: true
+  , default: false
   , help: 'turn on stats collection and report via SIGUSR1'
   })
   .parse()
@@ -89,11 +89,6 @@ cli.sk = net.createConnection(opt.port, function() {
   }
   cli.frap.on('drain', onDrain)
 
-  //cli.intervalid = setInterval(function(){
-  //  log("cli.frap.pending=%d", cli.frap.pending.length)
-  //  log(inspect(cli.sk, false, 3))
-  //}, 1000)
-
   function onFrame(buf){
     var o = JSON.parse(buf.toString())
     cli.recv += 1
@@ -101,7 +96,7 @@ cli.sk = net.createConnection(opt.port, function() {
       log("cli.recv = %d", cli.recv)
     }
     if (cli.recv === cli.iters) {
-      log("received all sent: %d === %d", cli.sent, cli.iters)
+      log("%s> received all sent: %d === %d", cli.id, cli.sent, cli.iters)
       cli.sk.end()
     }
   }
@@ -109,7 +104,7 @@ cli.sk = net.createConnection(opt.port, function() {
 
   function onError(err){
     log("%s> error:", cli.id, err)
-    log("h-small.js: calling sk.end() in frap.on('error', ...)")
+    log("%s> calling sk.end() in frap.on('error', ...)", cli.id)
     cli.sk.end()
   }
   cli.frap.on('error', onError)
@@ -123,7 +118,7 @@ cli.sk = net.createConnection(opt.port, function() {
     sent = cli.frap.sendFrame(buf)
     cli.sent += 1
 
-    //log("sendFrame returned %j", sent)
+    if (VERBOSE) log("sendFrame returned %j", sent)
   }
   log("%s> sending done", cli.id)
 })
@@ -139,7 +134,7 @@ function _end() {
 }
 cli.sk.once('end', function() {
   log("%s> end", cli.id)
-  log("h-small.js: calling sk.end() in sk.once('end', ...)")
+  log("%s> calling sk.end() in sk.once('end', ...)", cli.id)
   if (cli.intervalid) clearInterval(cli.intervalid)
   cli.sk.end()
   _end()
