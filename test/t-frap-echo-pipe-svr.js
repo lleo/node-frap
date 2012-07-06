@@ -21,7 +21,7 @@ var opt = nomnom.script('t-frap-echo-pipe-svr')
       VERBOSE += 1
       if (VERBOSE>1) { //if verbose already turned on
         //enable library verbosity
-        //Frap.VERBOSE += 1
+        Frap.VERBOSE += 1
         Frap.RFrameStream.VERBOSE += 1
         Frap.WFrameStream.VERBOSE += 1
       }
@@ -48,14 +48,16 @@ if (opt.stats) {
   var statsmod = require('stats')
 
   var stats = statsmod.getStats()
+  stats.createStat('sk_recv_sz', statsmod.Value) //size of each socket data buf
+  stats.createHOG('sk_recv_sz SemiBytes', 'sk_recv_sz', statsmod.SemiBytes)
   stats.createStat('ttcf', statsmod.Timer) //time-to-complete-frame
-  stats.createStat('tbfp', statsmod.Timer)
+  stats.createStat('tbfp', statsmod.Timer) //time-between-frame-parts
   stats.createStat('part_sz', statsmod.Value)
   stats.createStat('frame_sz', statsmod.Value)
-  stats.createHOG('ttcf SemiLogMS', stats.get('ttcf'), statsmod.SemiLogMS)
-  stats.createHOG('tbfp SemiLogMS', stats.get('tbfp'), statsmod.SemiLogMS)
-  stats.createHOG('part_sz LogBytes' , stats.get('part_sz' ), statsmod.LogBytes)
-  stats.createHOG('frame_sz LogBytes', stats.get('frame_sz'), statsmod.LogBytes)
+  stats.createHOG('ttcf SemiLogMS', 'ttcf', statsmod.SemiLogMS)
+  stats.createHOG('tbfp SemiLogMS', 'tbfp', statsmod.SemiLogMS)
+  stats.createHOG('part_sz SemiBytes' , 'part_sz', statsmod.SemiBytes)
+  stats.createHOG('frame_sz SemiBytes', 'frame_sz', statsmod.SemiBytes)
 
   process.on('SIGUSR1', function(){
     log( stats.toString({values: 'both'}) )
@@ -93,13 +95,12 @@ process.on('exit', function() {
   fs.unlinkSync('./t-frap-echo-pipe-svr.repl.sk')
 })
 process.on('uncaughtException', function(err){
-  log(inspect(err.actual.frap.sk._events.drain))
   log("uncaught", err)
-  if (err instanceof Error) {
-    log(err.stack)
-  }
-  throw err //re-throw
-  //process.exit(1)
+  //if (err instanceof Error) {
+  //  log(err.stack)
+  //}
+
+  process.exit(1)
   //process.nextTick(function(){process.exit(1)})
 })
 
@@ -119,70 +120,56 @@ svr.sk.on('listening', function() {
 svr.sk.on('connection', function(sk) {
   var ident = sk.remoteAddress+":"+sk.remotePort
     , frap = new Frap(sk, false)
-  
-  if (VERBOSE)
-    log(ident+" connected")
 
+  if (VERBOSE) log("%s connected", ident)
+
+  // just for the repl
   svr.client[ident] = {}
   svr.client[ident].sk = sk
   svr.client[ident].frap = frap
 
-  var queue = []
-  function enqueue(rstream, framelen) {
-    log("enqueue: begin; queue.length=%d", queue.length)
-    queue.push([rstream, framelen])
-    //if (!frap._wstream && queue.length === 1) {
-    if (queue.length === 1) {
-      log("queue.length === 1")
-      dequeue()
-      //process.nextTick(dequeue)
-    }
-    //log("enqueue: exiting; queue.length=%d", queue.length)
-  }
-  function dequeue() {
-    log("dequeue: begin; queue.length=%d", queue.length)
-    if (queue.length === 0) {
-      //log("SKIPPING; queue.length === 0")
-      return
-    }
-    var first = queue.shift()
-      , rstream  = first[0]
-      , framelen = first[1]
-      , wstream = frap.createWriteStream(framelen)
-    
-    wstream.once('finished', function(ondrain){
-      log("wstream.once 'finished' dequeue; queue.length=%d; ondrain=%j;", queue.length, ondrain)
-      if (queue.length > 0) {
-        //log("wstream.once 'finished': calling dequeue")
-        dequeue()
-      }
-    })
-
-    log("dequeue: setting up pipe")
-    rstream.pipe(wstream)
-  }
-
   frap.on('begin', function onBegin(rstream, framelen){
 
-    //enqueue(rstream, framelen)
+    rstream.once('end', function(){
+      if (VERBOSE>1) log("rstrem.once 'end': pausing frap")
+      frap.pause()
+    })
 
-    if (frap._wstream) {
-      rstream.pause()
-      frap._wstream.on('finished', function(){
-        rstream.resume()
-      })
-    }
     //Setup echo pipe
     var wstream = frap.createWriteStream(framelen)
+
+    wstream.once('finished', function(){
+      if (VERBOSE>1) log("wstream.once 'finished': resuming frap")
+      frap.resume()
+    })
+
     rstream.pipe(wstream)
   })
 
-  svr.client[ident].sk.on('end', function() {
-    //svr.client[ident].sk.end()
-    if (VERBOSE)
-      log(ident+" disconnected")
-    ;delete svr.client[ident]
+  sk.on('end', function() {
+    if (VERBOSE) log("%s disconnected", ident)
+    delete svr.client[ident]
   })
+
+  if (opt.stats) {
+    sk.on('data', function(buf) {
+      stats.get('sk_recv_sz').set(buf.length)
+    })
+    frap.on('begin', function(rstream, framelen){
+      stats.get('frame_sz').set(framelen)
+      
+      var ttcf_done = stats.get('ttcf').start()
+      rstream.once('end', function(){ ttcf_done() })
+
+      var tbfp_done
+      rstream.on('data', function(buf){
+        stats.get('part_sz').set(buf.length)
+
+        if (tbfp_done) tbfp_done()
+        tbfp_done = stats.get('tbfp').start()
+      })
+    })
+  }
 })
 
 svr.sk.on('error', function(err) {
