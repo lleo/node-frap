@@ -106,9 +106,12 @@ svr.sk.on('connection', function(sk) {
   if (VERBOSE)
     log(ident+" connected")
 
+  var frap = new Frap(sk)
+
+  //just for the repl
   svr.client[ident] = {}
   svr.client[ident].sk = sk
-  svr.client[ident].frap = new Frap(sk)
+  svr.client[ident].frap = frap
 
   //stats
   if (stats) {
