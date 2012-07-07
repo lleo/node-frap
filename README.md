@@ -36,7 +36,7 @@ Frap - Framing Wrapper
         cli.frap.end()
       })
     
-      cli.frap.send(new Buffer(JSON.stringify(cli.msg), 'utf8'))
+      cli.frap.sendFrame(new Buffer(JSON.stringify(cli.msg), 'utf8'))
     })
 
 API

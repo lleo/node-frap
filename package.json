@@ -1,6 +1,6 @@
 {
   "name"        : "frap"
-, "version"     : "0.9.0"
+, "version"     : "1.0.0"
 , "description" : "A Socket wrapper that provides simple framing protocol"
 , "keywords"    : ["socket", "frame", "framing", "protocol"]
 , "homepage"    : "https://github.com/lleo/node-frap"
