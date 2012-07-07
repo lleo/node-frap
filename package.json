@@ -11,9 +11,14 @@
 , "author"      : { "name": "LLeo"
                   , "email": "lleoem@gmail.com"
                   , "url": "http://lleo-blog.blogspot.com/" }
-, "files"       : [ "README.md", "package.json", "lib", "examples", "test" ]
+, "files"       : [ "README.md"
+                  , "package.json"
+                  , "lib/index.js"
+                  , "lib/frap.js"
+                  , "lib/frap_stream.js"
+                  , "examples/*" ]
 , "main"        : "lib/index.js"
-, "dependencies": {}
-, "devDependencies": { "nomnom": ">=1.5.1" }
+, "dependencies": { "dequeue": "1.x"}
+, "devDependencies": {}
 , "engines"     : {"node" : ">=0.4.0"}
 }
