@@ -13,7 +13,7 @@ Frap - Framing Wrapper
       svr.frap[frap.id] = frap
       frap.on('frame', function(buf) {
         //simple echo
-        frap.send(buf)
+        frap.sendFrame(buf)
       })
       frap.on('end', function() {
         delete svr.frap[frap.id]
