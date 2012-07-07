@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 var fs = require('fs')
+  , path = require('path')
   , net = require('net')
   , Frap = require('frap')
   , nomnom = require('nomnom')
@@ -35,7 +36,8 @@ var opt = nomnom.script('send-file-cli')
 
 var sk = net.connect(opt.port, function(){
   var frap = new Frap(sk)
-    , namebuf = new Buffer(opt.filename, 'utf8')
+    , basename = path.basename(opt.filename)
+    , namebuf = new Buffer(basename, 'utf8')
     , sent
 
   function sendFile(frap, filename) {

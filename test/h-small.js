@@ -9,8 +9,6 @@ var net = require('net')
   , nomnom = require('nomnom')
   , u = require('underscore')
 
-Frap.WFrameStream.VERBOSE += 1
-
 var VERBOSE=0
 var opt = nomnom.script('t-frap-cli')
   .option('verbose', {
@@ -36,7 +34,14 @@ var opt = nomnom.script('t-frap-cli')
     abbr: 'i'
   , flag: false
   , default: 1000
-  , help: 'number of iterations of test to run'
+  , help: 'number of frames to send'
+  })
+  .option('progress', {
+    abbr: 'm'
+  , flag: false
+  , default: 0
+  , metavar: 'N'
+  , help: "log roughly N progress messages"
   })
   .option('stats', {
     abbr: 'S'
@@ -84,7 +89,7 @@ cli.sk = net.createConnection(opt.port, function() {
 
   function onDrain() {
     log("%s> frap drain", cli.id)
-    log("h-small.js: calling sk.end() in frap.on 'drain'")
+    //log("%s> calling sk.end() in frap.on 'drain'", cli.id)
     //cli.sk.end()
   }
   cli.frap.on('drain', onDrain)
@@ -92,11 +97,15 @@ cli.sk = net.createConnection(opt.port, function() {
   function onFrame(buf){
     var o = JSON.parse(buf.toString())
     cli.recv += 1
-    if (cli.recv % 10000 === 0) {
-      log("cli.recv = %d", cli.recv)
+    //if (cli.recv % 10000 === 0) {
+    if (opt.progress) {
+      var fract = Math.floor( (1/opt.progress)*opt.iters )
+      if (cli.recv % fract === 0)
+        log("%s> cli.recv = %d", cli.id, cli.recv)
     }
     if (cli.recv === cli.iters) {
-      log("%s> received all sent: %d === %d", cli.id, cli.sent, cli.iters)
+      log("%s> received all sent: %d === %d; calling sk.end()",
+          cli.id, cli.sent, cli.iters)
       cli.sk.end()
     }
   }
@@ -118,7 +127,7 @@ cli.sk = net.createConnection(opt.port, function() {
     sent = cli.frap.sendFrame(buf)
     cli.sent += 1
 
-    if (VERBOSE) log("sendFrame returned %j", sent)
+    //if (VERBOSE) log("sendFrame returned %j", sent)
   }
   log("%s> sending done", cli.id)
 })
@@ -133,10 +142,8 @@ function _end() {
   cli.isended = true
 }
 cli.sk.once('end', function() {
-  log("%s> end", cli.id)
-  log("%s> calling sk.end() in sk.once('end', ...)", cli.id)
+  log("%s> sk once 'end'", cli.id)
   if (cli.intervalid) clearInterval(cli.intervalid)
-  cli.sk.end()
   _end()
 })
 

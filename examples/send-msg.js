@@ -15,5 +15,9 @@ cli.sk = net.createConnection(7000, function() {
     cli.frap.end()
   })
 
-  cli.frap.send(new Buffer(JSON.stringify(cli.msg), 'utf8'))
+  cli.frap.sendFrame(new Buffer(JSON.stringify(cli.msg), 'utf8'))
+  if (sent)
+    frap.once('drain', function(){log("on drain: sent message")})
+  else
+    log("immediate: sent message")
 })

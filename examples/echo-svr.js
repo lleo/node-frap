@@ -13,7 +13,7 @@ svr.sk.on('connection', function(sk){
   frap.on('frame', function(buf) {
     //simple echo
     console.log("recv:", buf.toString('utf8'))
-    frap.send(buf)
+    frap.sendFrame(buf)
   })
   frap.on('end', function() {
     console.log("end:", frap.id)

@@ -138,7 +138,7 @@ svr.sk.on('connection', function(sk) {
     //Setup echo pipe
     var wstream = frap.createWriteStream(framelen)
 
-    wstream.once('finished', function(){
+    wstream.once('close', function(){
       if (VERBOSE>1) log("wstream.once 'finished': resuming frap")
       frap.resume()
     })
