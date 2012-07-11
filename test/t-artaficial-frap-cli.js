@@ -81,8 +81,8 @@ cli.sk.on('connect', function() {
 
   cli.frap = new Frap(cli.sk, true)
 
-  cli.frap.on('frame', function(buf){
-    if (VERBOSE) log("cli.frap.on 'frame': buf.length=%d;", buf.length)
+  cli.frap.on('data', function(buf){
+    if (VERBOSE) log("cli.frap.on 'data': buf.length=%d;", buf.length)
 
     if (cli.printmsg)
       log("received:", buf.toString('ascii'))

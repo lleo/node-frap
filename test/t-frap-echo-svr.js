@@ -137,7 +137,7 @@ svr.sk.on('connection', function(sk) {
     })
   }
 
-  svr.client[ident].frap.on('frame', function(buf){
+  svr.client[ident].frap.on('data', function(buf){
     //log(format("FRAP: %s sent: buf.length=%d;", ident, buf.length))
     svr.client[ident].frap.sendFrame(buf)
     buf = undefined

@@ -94,7 +94,7 @@ cli.sk = net.createConnection(opt.port, function() {
   }
   cli.frap.on('drain', onDrain)
 
-  function onFrame(buf){
+  function onData(buf){
     var o = JSON.parse(buf.toString())
     cli.recv += 1
     //if (cli.recv % 10000 === 0) {
@@ -109,7 +109,7 @@ cli.sk = net.createConnection(opt.port, function() {
       cli.sk.end()
     }
   }
-  cli.frap.on('frame', onFrame)
+  cli.frap.on('data', onData)
 
   function onError(err){
     log("%s> error:", cli.id, err)

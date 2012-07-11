@@ -79,8 +79,8 @@ cli.sk = net.connect(cli.port, cli.host, function() {
   log("connected")
   cli.frap = new Frap(cli.sk)
 
-  cli.frap.on('frame', function(buf){
-    log(format("cli.frap.on 'frame': buf.length=%d;", buf.length))
+  cli.frap.on('data', function(buf){
+    log(format("cli.frap.on 'data': buf.length=%d;", buf.length))
     var d = Date.now() - t0
       , tp = (cli.nbufs * cli.bufsz) / (d / 1000) / 1024 
     log("Time-to-recv = %d ms", d)
@@ -89,12 +89,6 @@ cli.sk = net.connect(cli.port, cli.host, function() {
     buf = undefined
 
     cli.sk.end()
-
-    //setTimeout(function(){
-    //  log("Timeout called")
-    //  //cli.sk.end()
-    //  //cli.sk.destroySoon()
-    //}, 500)
   })
 
   var bufs = [], buf, t0
@@ -154,8 +148,8 @@ if (opt.stats) {
     assert(cli.frap, "cli.frap not set")
     stats.createStat('frap recv gap', statsmod.Timer)
     stats.createStat('frap part size', statsmod.Value, {units:'bytes'})
-    stats.createHog('frap recv size', 'sk recv size', statsmod.SemiBytes)
-    stats.createHog('frap recv gap', 'sk recv gap', statsmod.SemiLogMS)
+    stats.createHog('frap part size', 'frap part size', statsmod.SemiBytes)
+    stats.createHog('frap recv gap', 'frap recv gap', statsmod.SemiLogMS)
     
     var frap_tm, cur_framelen
     cli.frap.on('begin', function(rstream, framelen){
