@@ -4,16 +4,20 @@ var net = require('net')
   , Frap = require('frap').Frap
   , cli = {}
 
-cli.msg = {cmd: "print", args: ["hello", "world"]}
+Frap.VERBOSE = 1
+Frap.RFrameStream.VERBOSE = 1
+Frap.WFrameStream.VERBOSE = 1
 
-cli.sk = net.createConnection(7000, function() {
-  cli.frap = new Frap(cli.sk)
+var msg = {cmd: "print", args: ["hello", "world"]}
 
-  cli.frap.on('frame', function(buf) {
-    var msg = JSON.parse(buf.toString('utf8'))
-    console.log("recv:", msg)
-    cli.frap.end()
+var sk = net.createConnection(7000, function() {
+  var frap = new Frap(sk)
+
+  frap.once('data', function(buf) {
+    var recv_msg = JSON.parse(buf.toString('utf8'))
+    console.log("recv:", recv_msg)
+    frap.end()
   })
 
-  cli.frap.sendFrame(new Buffer(JSON.stringify(cli.msg), 'utf8'))
+  frap.sendFrame(new Buffer(JSON.stringify(msg), 'utf8'))
 })

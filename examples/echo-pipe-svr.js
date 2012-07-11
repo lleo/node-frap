@@ -2,38 +2,28 @@
 
 var net = require('net')
   , Frap = require('frap').Frap
-  , svr = {frap: {}}
+  , svr = {}
   , log = console.log
-  , VERBOSE = false
+
+if (process.env['FRAP_VERBOSE']) {
+  Frap.VERBOSE = 1
+  Frap.RFrameStream.VERBOSE = 1
+  Frap.WFrameStream.VERBOSE = 1
+}
 
 svr.sk = net.createServer().listen(7000)
 
 svr.sk.on('connection', function(sk){
-  var frap = new Frap(sk)
+  var frap = new Frap(sk, true)
 
   log("connection:", frap.id)
 
-  svr.frap[frap.id] = frap
-
-  frap.on('begin', function(rstream, framelen) {
-    rstream.once('end', function(){
-      if (VERBOSE) log("%s rstrem.once 'end': pausing frap", frap.id)
-      frap.pause()
-    })
-
-    //Setup echo pipe
-    var wstream = frap.createWriteStream(framelen)
-
-    wstream.once('close', function(){
-      if (VERBOSE) log("%s wstream.once 'finished': resuming frap", frap.id)
-      frap.resume()
-    })
-
-    rstream.pipe(wstream)
+  frap.pipe(frap)
+  
+  frap.once('close', function() {
+    console.log("close:", frap.id)
   })
-
-  frap.on('end', function() {
-    log("%s frap end:", frap.id)
-    delete svr.frap[frap.id]
-  })
+  
+  sk.on('end', function() { log("sk.on 'end'") })
 })
+
