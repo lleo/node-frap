@@ -21,9 +21,10 @@ svr.sk.on('connection', function(sk){
   frap.pipe(frap)
   
   frap.once('close', function() {
-    console.log("close:", frap.id)
+    log("close:", frap.id)
   })
   
-  sk.on('end', function() { log("sk.on 'end'") })
+  sk.on('end', function() {
+    log("sk.on 'end'", frap.id)
+  })
 })
-
