@@ -16,7 +16,7 @@ var sk = net.createConnection(7000, function() {
   frap.once('data', function(buf) {
     var recv_msg = JSON.parse(buf.toString('utf8'))
     console.log("recv:", recv_msg)
-    frap.end()
+    sk.end()
   })
 
   frap.sendFrame(new Buffer(JSON.stringify(msg), 'utf8'))
