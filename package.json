@@ -19,7 +19,8 @@
                   , "lib/channel.js"
                   , "examples/*" ]
 , "main"        : "lib/index.js"
-, "dependencies": { "dequeue": "1.x"}
+, "dependencies": { "dequeue": "1.x"
+                  , "underscrore": "1.3.x" }
 , "devDependencies": {}
 , "engines"     : {"node" : ">=0.4.0"}
 }
