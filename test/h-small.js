@@ -34,7 +34,7 @@ var opt = nomnom.script('t-frap-cli')
     abbr: 'i'
   , flag: false
   , default: 1000
-  , help: 'number of frames to send'
+  , help: 'number of frames to send; default 1000'
   })
   .option('progress', {
     abbr: 'm'
