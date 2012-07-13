@@ -72,9 +72,10 @@ var cli = {
 var gen = (function(){ //just for a closure scope
   var i=0
   return function _gen() {
-    var o = { cmd: "noop"
-            , seq: i
-            , obj: {fee: "foo", fie: "bar", foe: "baz", fum: "biz"} }
+    //var o = { cmd: "noop"
+    //        , seq: i
+    //        , obj: {fee: "foo", fie: "bar", foe: "baz", fum: "biz"} }
+    var o = {seq: i}
     i += 1
     return o
   }
