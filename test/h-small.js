@@ -19,8 +19,8 @@ var opt = nomnom.script('t-frap-cli')
     VERBOSE += 1
     if (VERBOSE>1) {
       Frap.VERBOSE += 1
-      Frap.RFrameStream.VERBOSE += 1
-      Frap.WFrameStream.VERBOSE += 1
+      //Frap.RFrameStream.VERBOSE += 1
+      //Frap.WFrameStream.VERBOSE += 1
     }
   }
   })
@@ -57,10 +57,6 @@ process.on('SIGINT', function () {
     log( stats.toString({values: 'both'}) )
   process.nextTick(function(){ process.exit(0) })
 })
-//process.on('uncaughtException', function(err){
-//  log("caught:", err)
-//  process.nextTick(function(){ process.exit(1) })
-//})
 
 var cli = {
   iters: opt.iters
@@ -68,6 +64,12 @@ var cli = {
 , sent: 0
 , recv: 0
 }
+
+process.on('uncaughtException', function(err){
+  log("caught:", err)
+  log("stack:", err.stack)
+  process.exit(1)
+})
 
 var gen = (function(){ //just for a closure scope
   var i=0
@@ -96,6 +98,7 @@ cli.sk = net.createConnection(opt.port, function() {
   cli.frap.on('drain', onDrain)
 
   function onData(buf){
+    log("buf = >%s<", buf.toString())
     var o = JSON.parse(buf.toString())
     cli.recv += 1
     //if (cli.recv % 10000 === 0) {
