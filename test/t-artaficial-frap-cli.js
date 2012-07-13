@@ -79,7 +79,7 @@ cli.sk.on('connect', function() {
 
   var buf, t0
 
-  cli.frap = new Frap(cli.sk, true)
+  cli.frap = new Frap(cli.sk)
 
   cli.frap.on('data', function(buf){
     if (VERBOSE) log("cli.frap.on 'data': buf.length=%d;", buf.length)
