@@ -77,29 +77,34 @@ cli.sk = net.createConnection(cli.port)
 cli.sk.on('connect', function() {
   if (VERBOSE) log("connected")
 
-  var buf, t0
+  var buf, t0, nrecv=0
 
   cli.frap = new Frap(cli.sk)
 
   cli.frap.on('data', function(buf){
     if (VERBOSE) log("cli.frap.on 'data': buf.length=%d;", buf.length)
 
-    if (cli.printmsg)
-      log("received:", buf.toString('ascii'))
+    if (cli.printmsg) log("received:", buf.toString('ascii'))
 
-    setTimeout(function(){
-      if (!cli.ended) {
-        cli.ended = true
-        cli.sk.end()
-      }
-    }, 500)
+    nrecv += 1
+
+    if (nrecv === cli.nbufs) {
+      setTimeout(function(){
+        if (!cli.ended) {
+          cli.ended = true
+          cli.sk.end()
+        }
+      }, 500)
+    }
   })
 
   buf = new Buffer((4+cli.bufsz) * cli.nbufs)
   buf.fill(88) //88 == 'X'
   for (var o=0; o<buf.length; o+=cli.bufsz+4) {
+    log("writeUInt32BE(%d, %d)", cli.bufsz, o)
     buf.writeUInt32BE(cli.bufsz, o)
   }
+  log("buf.length=%d", buf.length)
 
   t0 = Date.now()
 
@@ -132,6 +137,7 @@ function slowSend(sk, buf, nb, wait, cb) { //nb == number of bytes to per send
     if (end > buf.length) { end = buf.length }
 
     var rv = sk.write(buf.slice(off, end))
+//    log("sk.write(buf.slice(%d, %d)) => %j", off, end, rv)
 
     off += nb
     if (off >= buf.length) {
