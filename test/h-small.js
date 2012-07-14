@@ -63,6 +63,7 @@ var cli = {
 , frap: undefined
 , sent: 0
 , recv: 0
+, tot: 0
 }
 
 process.on('uncaughtException', function(err){
@@ -90,6 +91,8 @@ cli.sk = net.createConnection(opt.port, function() {
   cli.id = format("%s:%d", cli.sk.remoteAddress, cli.sk.remotePort)
   cli.frap = new Frap(cli.sk)
 
+  var t0 = Date.now()
+
   function onDrain() {
     log("%s> frap drain", cli.id)
     //log("%s> calling sk.end() in frap.on 'drain'", cli.id)
@@ -98,7 +101,7 @@ cli.sk = net.createConnection(opt.port, function() {
   cli.frap.on('drain', onDrain)
 
   function onData(buf){
-    log("buf = >%s<", buf.toString())
+    cli.tot += buf.length
     var o = JSON.parse(buf.toString())
     cli.recv += 1
     //if (cli.recv % 10000 === 0) {
@@ -110,6 +113,7 @@ cli.sk = net.createConnection(opt.port, function() {
     if (cli.recv === cli.iters) {
       log("%s> received all sent: %d === %d; calling sk.end()",
           cli.id, cli.sent, cli.iters)
+      log("bytes per second: %d", cli.tot / ((Date.now()-t0)/1000))
       cli.sk.end()
     }
   }
@@ -132,6 +136,9 @@ cli.sk = net.createConnection(opt.port, function() {
     cli.sent += 1
 
     //if (VERBOSE) log("sendFrame returned %j", sent)
+  }
+  if (!sent) {
+    cli.frap.once('drain', function(){ log("frap drained") })
   }
   log("%s> sending done", cli.id)
 })
