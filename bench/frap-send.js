@@ -108,7 +108,7 @@ var sk = net.createConnection(opt.port, function() {
 
       sent = frap.sendFrame(buf)
       if (!sent) {
-        frap.on('drain', function(){
+        frap.once('drain', function(){
           nsent += 1
           send()
         })
