@@ -5,7 +5,6 @@ var net = require('net')
   , log = console.log
   , format = require('util').format
   , inspect = require('util').inspect
-  , Frap = require('frap').Frap
   , nomnom = require('nomnom')
   , u = require('underscore')
 
@@ -16,25 +15,26 @@ var opt = nomnom.script('t-frap-cli')
   , flag: true
   , help: 'show more output'
   , callback: function() {
-    VERBOSE += 1
-    if (VERBOSE>1) {
-      Frap.VERBOSE += 1
-      //Frap.RFrameStream.VERBOSE += 1
-      //Frap.WFrameStream.VERBOSE += 1
+      VERBOSE += 1
     }
-  }
   })
   .option('port', {
     abbr: 'p'
   , flag: false
   , default: 7000
-  , help: 'connect port; default 7000'
+  , help: "connect port; default 7000"
   })
   .option('iters', {
     abbr: 'i'
   , flag: false
   , default: 1000
-  , help: 'number of frames to send; default 1000'
+  , help: "number of frames to send; default 1000"
+  })
+  .option('datasize', {
+    abbr: 'z'
+  , flag: false
+  , default: 0
+  , help: "add a property to the json object this bytes big; 0 disables"
   })
   .option('progress', {
     abbr: 'm'
@@ -47,7 +47,12 @@ var opt = nomnom.script('t-frap-cli')
     abbr: 'S'
   , flag: true
   , default: false
-  , help: 'turn on stats collection and report via SIGUSR1'
+  , help: "turn on stats collection and report via SIGUSR1"
+  })
+  .option('simple', {
+    flag: true
+  , default: false
+  , help: "use SimpleFrap instead of Frap"
   })
   .parse()
 
@@ -57,6 +62,20 @@ process.on('SIGINT', function () {
     log( stats.toString({values: 'both'}) )
   process.nextTick(function(){ process.exit(0) })
 })
+
+var Frap
+if (opt.simple) {
+  Frap = require('frap').SimpleFrap
+  if (VERBOSE>1) Frap.VERBOSE += 1
+}
+else {
+  Frap = require('frap').Frap
+  if (VERBOSE>1) /* -vv */ Frap.VERBOSE += 1
+  if (VERBOSE>2) { //-vvv
+    Frap.RFrameStream.VERBOSE += 1
+    Frap.WFrameStream.VERBOSE += 1
+  }
+}
 
 var cli = {
   iters: opt.iters
@@ -79,6 +98,9 @@ var gen = (function(){ //just for a closure scope
     //        , seq: i
     //        , obj: {fee: "foo", fie: "bar", foe: "baz", fum: "biz"} }
     var o = {seq: i}
+    if (opt.datasize) {
+      o.data = (new Array(opt.datasize+1)).join('X')
+    }
     i += 1
     return o
   }
@@ -93,26 +115,16 @@ cli.sk = net.createConnection(opt.port, function() {
 
   var t0 = Date.now()
 
-  function onDrain() {
-    log("%s> frap drain", cli.id)
-    //log("%s> calling sk.end() in frap.on 'drain'", cli.id)
-    //cli.sk.end()
-  }
-  cli.frap.on('drain', onDrain)
-
   function onData(buf){
     cli.tot += buf.length
     var o = JSON.parse(buf.toString())
     cli.recv += 1
-    //if (cli.recv % 10000 === 0) {
     if (opt.progress) {
       var fract = Math.floor( (1/opt.progress)*opt.iters )
-      if (cli.recv % fract === 0)
-        log("%s> cli.recv = %d", cli.id, cli.recv)
+      if (cli.recv % fract === 0) log("%s> cli.recv = %d", cli.id, cli.recv)
     }
     if (cli.recv === cli.iters) {
-      log("%s> received all sent: %d === %d; calling sk.end()",
-          cli.id, cli.sent, cli.iters)
+      //log("%s> received all sent: %d === %d; calling sk.end()", cli.id, cli.sent, cli.iters)
       log("bytes per second: %d", cli.tot / ((Date.now()-t0)/1000))
       cli.sk.end()
     }
@@ -137,33 +149,10 @@ cli.sk = net.createConnection(opt.port, function() {
 
     //if (VERBOSE) log("sendFrame returned %j", sent)
   }
-  if (!sent) {
-    cli.frap.once('drain', function(){ log("frap drained") })
-  }
-  log("%s> sending done", cli.id)
-})
-
-function _end() {
-  if (cli.isended) {
-    log("%s> _end: already called", cli.id)
-    return
-  }
-  delete cli.frap
-  delete cli.sk
-  cli.isended = true
-}
-cli.sk.once('end', function() {
-  log("%s> sk once 'end'", cli.id)
-  if (cli.intervalid) clearInterval(cli.intervalid)
-  _end()
-})
-
-cli.sk.once('close', function(had_error) {
-  log("%s> close: had_error=%j", cli.id, had_error)
-  if (!cli.isended) {
-    log("%s> close: calling _end", cli.id)
-    _end()
-  }
+  //if (!sent) {
+  //  cli.frap.once('drain', function(){ log("frap drained") })
+  //}
+  //log("%s> sending done", cli.id)
 })
 
 if (opt.stats) {
