@@ -5,14 +5,44 @@ if [ ! -f './package.json' ]; then
   exit 1
 fi
 
-./bench/raw-echo.js 2>&1 >raw-echo.out &
+PORT=7000
+num_frames=$1
+frame_size=$2
+
+echo "Starting: bench/raw-echo.js"
+./bench/raw-echo.js -p $PORT 2>raw-echo.err >/dev/null &
 SVRPID=$!
 
-num_frames=100000
-frame_size=10
+sleep 1
 
-/usr/bin/time ./bench/line-send.js -n $num_frames -z $frame_size
-/usr/bin/time ./bench/frap-send.js -n $num_frames -z $frame_size
-/usr/bin/time ./bench/frap-send.js -n $num_frames -z $frame_size
+./bench/line-send.js -p $PORT -n $num_frames -z $frame_size
+./bench/frap-send.js -p $PORT -n $num_frames -z $frame_size --simple
+./bench/frap-send.js -p $PORT -n $num_frames -z $frame_size
+
+kill $SVRPID
+
+#echo-pipe-svr.js is hard coded to listen on 7000
+echo "Starting: examples/echo-pipe-svr.js"
+./examples/echo-pipe-svr.js 2>echo-pipe-svr.err >/dev/null &
+SVRPID=$!
+
+sleep 1
+
+./bench/frap-send.js -p $PORT -n $num_frames -z $frame_size --simple
+./bench/frap-send.js -p $PORT -n $num_frames -z $frame_size
+
+kill $SVRPID
+
+sleep 1
+
+echo "Starting: bench/dev-null.js"
+./bench/dev-null.js -p $PORT 2>dev-null.err >/dev/null &
+SVRPID=$!
+
+sleep 1
+
+./bench/line-send.js -R -p $PORT -n $num_frames -z $frame_size
+./bench/frap-send.js -R -p $PORT -n $num_frames -z $frame_size --simple
+./bench/frap-send.js -R -p $PORT -n $num_frames -z $frame_size
 
 kill $SVRPID

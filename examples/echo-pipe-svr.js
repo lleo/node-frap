@@ -16,15 +16,16 @@ svr.sk = net.createServer().listen(7000)
 svr.sk.on('connection', function(sk){
   var frap = new Frap(sk, true)
 
-  log("connection:", frap.id)
+  var id = sk.remoteAddress + ":" + sk.remotePort
+  log("connection:", id)
 
   frap.pipe(frap)
 
   frap.once('close', function() {
-    log("close:", frap.id)
+    log("close:", id)
   })
 
   sk.on('end', function() {
-    log("sk.on 'end'", frap.id)
+    log("sk.on 'end':", id)
   })
 })

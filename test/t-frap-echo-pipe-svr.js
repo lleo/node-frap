@@ -128,7 +128,7 @@ svr.sk.on('connection', function(sk) {
   svr.client[ident].sk = sk
   svr.client[ident].frap = frap
 
-  frap.on('begin', function onBegin(rstream, framelen){
+  frap.on('header', function onBegin(rstream, framelen){
 
     rstream.once('end', function(){
       if (VERBOSE>1) log("rstrem.once 'end': pausing frap")
@@ -137,6 +137,11 @@ svr.sk.on('connection', function(sk) {
 
     //Setup echo pipe
     var wstream = frap.createWriteStream(framelen)
+
+    rstream.once('close', function(){
+      if (VERBOSE>1) log("rstream.once 'close': wstream.destroy()")
+      wstream.destroy()
+    })
 
     wstream.once('close', function(){
       if (VERBOSE>1) log("wstream.once 'finished': resuming frap")

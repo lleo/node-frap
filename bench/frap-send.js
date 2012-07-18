@@ -43,18 +43,26 @@ var opt = nomnom.script('frap-send')
   , default: false
   , help: "use SimpleFrap instead of Frap"
   })
+  .option('norecv', {
+    abbr: 'R'
+  , flag: true
+  , default: false
+  , help: "don't bother to receive any data"
+  })
   .parse()
 
-  process.on('uncaughtException', function(err){
-    log("caught:", err)
-    log("stack:", err.stack)
-    process.exit(1)
-  })
+process.on('uncaughtException', function(err){
+  log("caught:", err)
+  log("stack:", err.stack)
+  process.exit(1)
+})
 
 process.on('SIGINT', function () {
   log('caught SIGINT')
   process.nextTick(function(){ process.exit(0) })
 })
+
+log(require('path').basename(process.argv[1]), process.argv.slice(2).join(' '))
 
 var Frap
 if (opt.simple) {
@@ -77,46 +85,58 @@ var gen = (function(){ //just for a closure scope
   }
 })() //end scope
 
+var TTR, TTS
+process.once('exit', function(){
+  log("TTS=%d TTR=%d", TTS/1000, TTR/1000)
+})
+
+
 var sk = net.createConnection(opt.port, function() {
+  var frap = new Frap(sk)
 
-  var id = format("%s:%d", sk.remoteAddress, sk.remotePort)
-    , frap = new Frap(sk)
+  var start = Date.now()
 
-  var t0 = Date.now()
-    , tot = 0
+  var bytes_recv = 0
+    , bytes_sent = 0
+    , all_sent = false
     , nsent = 0
     , nrecv = 0
+    , t0 = Date.now()
 
-  function onFrame(buf){
-    tot += buf.length
-    var s = buf.toString('utf8')
-    nrecv += 1
-    if (nrecv === opt.nfrms) {
-      //log("%s> received all sent: %d === %d; calling sk.end()", id, nsent, nrecv)
-      log("bytes per second: %d", tot / ((Date.now()-t0)/1000))
-      sk.end()
-    }
+  if (!opt.norecv) {
+    frap.on('frame', function(buf){
+      var s = buf.toString('utf8')
+      nrecv += 1
+      if (nrecv === opt.nfrms) {
+        TTR = Date.now() - start
+        sk.end()
+      }
+    })
   }
-  frap.on('frame', onFrame)
 
   var i=0
     , buf = new Buffer(gen(), 'utf8')
   function send() {
     var o, str, sent
-    while (i<opt.nfrms) {
+    while ( i < opt.nfrms ) {
+      bytes_sent += buf.length + 4
       i += 1
 
       sent = frap.sendFrame(buf)
       if (!sent) {
         frap.once('drain', function(){
+          //log("frap drained")
           nsent += 1
           send()
         })
-        break //while
+        return
       }
       nsent += 1
     } //while
-  }
-  send()
+    all_sent = true
+    TTS = Date.now() - start
+    if (opt.norecv) sk.end()
+  } //send
 
+  send()
 })

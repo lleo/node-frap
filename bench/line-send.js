@@ -23,7 +23,26 @@ var opt = nomnom.script('raw-send.js')
   , default: 0
   , help: "add a property to the json object this bytes big; 0 disables"
   })
+  .option('norecv', {
+    abbr: 'R'
+  , flag: true
+  , default: false
+  , help: "don't bother to receive any data"
+  })
   .parse()
+
+process.on('uncaughtException', function(err){
+  log("caught:", err)
+  log("stack:", err.stack)
+  process.exit(1)
+})
+
+process.on('SIGINT', function () {
+  log('caught SIGINT')
+  process.nextTick(function(){ process.exit(0) })
+})
+
+log(require('path').basename(process.argv[1]), process.argv.slice(2).join(' '))
 
 var gen = (function(){ //just for a closure scope
   var i=0
@@ -34,77 +53,90 @@ var gen = (function(){ //just for a closure scope
 
 
 var EventEmitter = require('events').EventEmitter
-function LineParser(src) {
+function LineFilter(src) {
   EventEmitter.call(this)
 
+  this.src = src
   this.s = ""
 
   var self = this
   src.on('data', function(buf){
-    var si = 0, ei
+    var bos = 0
+      , si = self.s.length
+      , ei
 
     self.s += buf.toString('utf8')
 
     while((ei = self.s.indexOf("\n",si)) !== -1) {
-      self.emit('line', self.s.substring(si, ei))
-      si = ei+1
+      self.emit('line', self.s.substring(bos, ei))
+      bos = si = ei+1
     }
     self.s = self.s.substring(si)
   })
-  
-  src.on('end', function(){
-    self.emit('end')
-  })
-  src.on('close', function(){
-    self.emit('close')
-  })
+
+  function onDrain() { self.emit('drain') }
+  function onEnd() { self.emit('end') }
+  function onClose(had_error) { self.emit('close', had_error) }
+  src.on('drain', onDrain)
+  src.on('end', onEnd)
+  src.on('close', onClose)
 }
-require('util').inherits(LineParser, EventEmitter)
+require('util').inherits(LineFilter, EventEmitter)
+LineFilter.prototype.send = function(str) {
+  str = str + "\n"
+  return this.src.write(str, 'utf8')
+}
+LineFilter.prototype.end = function() { this.src.end() }
+
+var TTS, TTR
+process.once('exit', function(){
+  log("TTS=%d TTR=%d", TTS/1000, TTR/1000)
+})
 
 var sk = net.createConnection(opt.port, function() {
+  var lf = new LineFilter(sk)
+
+  var start = Date.now()
+
   var bytes_recv = 0
     , bytes_sent = 0
+    , all_sent = false
     , nsent = 0
     , nrecv = 0
-    , all_sent = false
     , t0 = Date.now()
 
-  lineparser = new LineParser(sk)
-  lineparser.on('line', function(line){
-    //log("line: %s", line)
-    nrecv += 1
-    //log("nsent=%d; nrecv=%d;", nsent, nrecv)
-    if (all_sent && nrecv === nsent) {
-      sk.end()
-    }
-  })
-
-  sk.on('data', function(buf){
-    bytes_recv += buf.length
-    if (all_sent && bytes_recv === bytes_sent) {
-      log("bytes per second: %d", bytes_recv / ((Date.now()-t0)/1000))
-      //sk.end()
-    }
-  })
+  if (!opt.norecv) {
+    lf.on('line', function(line){
+    
+      nrecv += 1
+      if (nrecv === opt.nfrms) {
+        TTR = Date.now() - start
+        lf.end()
+      }
+    })
+  }
 
   var i=0
-    , buf = new Buffer(gen()+"\n", 'utf8')
+    , str = gen()
   function send() {
-    var o, str, sent
+    var o, sent
     while ( i < opt.nfrms ) {
-      bytes_sent += buf.length
-      nsent += 1
-
-      sent = sk.write(buf)
-      //log("sk.write: buf.length=%d => %j", buf.length, sent)
+      bytes_sent += Buffer.byteLength(str, 'utf8')
       i += 1
 
+      sent = lf.send(str)
       if (!sent) {
-        sk.once('drain', send)
+        lf.once('drain', function(){
+          nsent += 1
+          send()
+        })
         return
       }
+      nsent += 1
     } //while
     all_sent = true
+    TTS = Date.now() - start
+    if (opt.norecv) lf.end()
   } //send
 
   send()

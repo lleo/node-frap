@@ -9,13 +9,14 @@ svr.sk = net.createServer().listen(7000)
 svr.sk.on('connection', function(sk){
   var frap = new Frap(sk)
 
-  console.log("connection:", frap.id)
+  var id = sk.remoteAddress + ":" + sk.remotePort
+  console.log("connection:", id)
 
   frap.on('data', function(buf) {
     frap.write(buf)
   })
 
   frap.once('close', function() {
-    console.log("close:", frap.id)
+    console.log("close:", id)
   })
 })
