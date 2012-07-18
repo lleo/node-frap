@@ -5,6 +5,9 @@ if [ ! -f './package.json' ]; then
   exit 1
 fi
 
+# Prefered Usage: ./bench/runbench 200000 100
+#
+
 PORT=7000
 num_frames=$1
 frame_size=$2
