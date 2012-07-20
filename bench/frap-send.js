@@ -5,8 +5,8 @@ var net = require('net')
   , log = console.log
   , format = require('util').format
   , inspect = require('util').inspect
-  , Frap = require('frap').Frap
-  //, Frap = require('frap').SimpleFrap
+  , Frap = require('frap')
+  , SimpleFrap = require('../lib/simple_frap').SimpleFrap
   , nomnom = require('nomnom')
   , u = require('underscore')
 
@@ -66,11 +66,10 @@ log(require('path').basename(process.argv[1]), process.argv.slice(2).join(' '))
 
 var Frap
 if (opt.simple) {
-  Frap = require('frap').SimpleFrap
+  Frap = SimpleFrap
   if (VERBOSE>1) Frap.VERBOSE += 1
 }
 else {
-  Frap = require('frap').Frap
   if (VERBOSE>1) /* -vv */ Frap.VERBOSE += 1
   if (VERBOSE>2) { //-vvv
     Frap.RFrameStream.VERBOSE += 1
