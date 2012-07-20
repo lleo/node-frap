@@ -128,28 +128,29 @@ svr.sk.on('connection', function(sk) {
   svr.client[ident].sk = sk
   svr.client[ident].frap = frap
 
-  frap.on('header', function onBegin(rstream, framelen){
-
-    rstream.once('end', function(){
-      if (VERBOSE>1) log("rstrem.once 'end': pausing frap")
-      frap.pause()
-    })
-
-    //Setup echo pipe
-    var wstream = frap.createWriteStream(framelen)
-
-    rstream.once('close', function(){
-      if (VERBOSE>1) log("rstream.once 'close': wstream.destroy()")
-      wstream.destroy()
-    })
-
-    wstream.once('close', function(){
-      if (VERBOSE>1) log("wstream.once 'finished': resuming frap")
-      frap.resume()
-    })
-
-    rstream.pipe(wstream)
-  })
+  frap.pipe(frap)
+  //frap.on('header', function onBegin(rstream, framelen){
+  //
+  //  rstream.once('end', function(){
+  //    if (VERBOSE>1) log("rstrem.once 'end': pausing frap")
+  //    frap.pause()
+  //  })
+  //
+  //  //Setup echo pipe
+  //  var wstream = frap.createWriteStream(framelen)
+  //
+  //  rstream.once('close', function(){
+  //    if (VERBOSE>1) log("rstream.once 'close': wstream.destroy()")
+  //    wstream.destroySoon()
+  //  })
+  //
+  //  wstream.once('close', function(){
+  //    if (VERBOSE>1) log("wstream.once 'finished': resuming frap")
+  //    frap.resume()
+  //  })
+  //
+  //  rstream.pipe(wstream)
+  //})
 
   sk.on('end', function() {
     if (VERBOSE) log("%s disconnected", ident)
