@@ -7,7 +7,7 @@ this *Problem*/*Solution* section.)
 ## Problem
 
 When your _sender_ writes a series of buffers to a socket, the _receiver_
-receives data by way of on, or more, `data` socket events; each event with a
+receives data by way of on, or more, `'data'` socket events; each event with a
 single `Buffer` as the event input. Each received Buffer is not guaranteed to
 be just one of the _sender_'s socket `write()` calls worth of data, or even an
 integer number of the _sender_'s `write()` data. Sockets just guarantee the
@@ -143,15 +143,15 @@ _Frame Separator_ rule that a _frame_ may not contain the identifier.
 properties are recognized:
 
 * `noframes` is an boolean. If `true`, buffers will not be accumulated to emit
-  `frame` and `data` events. There is two reasons for this: First, for a
+  `'frame'` and `'data'` events. There is two reasons for this: First, for a
   large frame, megabytes or gigabytes large, the `Frap` object would have to
   collect the incoming Buffers until a complete frame was received. Second, in
-  order for a `data` event to be emitted those collected buffers would have
+  order for a `'data'` event to be emitted those collected buffers would have
   to be joined into a new, rather large, Buffer; an expensive operation.
 
 ### Events
 
-* Event: `frames`
+* Event: `'frame'`
 
   `function (bufs, framelen)`
 
@@ -159,59 +159,59 @@ properties are recognized:
   number of bytes of the frame size and the sum of the lengths of each of the
   Buffer objects in `bufs`.
 
-  `sendFrame()` is the complement of `frame` events.
+  `sendFrame()` is the complement of `'frame'` events.
 
   Disabled if `options.noframe === true` passed to constructor. You might
-  want to disable `frame` events to stop this library from accumulating
+  want to disable `'frame'` events to stop this library from accumulating
   very large number buffers in memory.
 
-* Event: `data`
+* Event: `'data'`
 
   `function (buf) { }`
   
   Where `buf` is a single Buffer object.
 
-  `data` events are the same as `frame` events except that they have
+  `'data'` events are the same as `'frame'` events except that they have
   had the buffers concatenated into a single buffer. This concatenation
-  operation is expensive so if there is no listeners for `data` events
+  operation is expensive so if there is no listeners for `'data'` events
   the concatenation will not occur.
 
-  `write()` is the complement of `data` events.
+  `write()` is the complement of `'data'` events.
 
   Disabled if `options.noframe === true` passed to constructor.
 
-* Event: `header`
+* Event: `'header'`
 
   `function (rstream, framelen) { }`
 
   Emitted when a header is encountered in the input stream.
 
-* Event: `part`
+* Event: `'part'`
 
   `function (buf, pos) { }`
 
   Emitted for each buffer in the input stream. `pos` is the position where
   the buffer starts within the _frame_.
 
-* Event: `drain`
+* Event: `'drain'`
 
   `function () { }`
 
   Emitted when the source stream flushes all the pending writes.
 
-* Event: `error`
+* Event: `'error'`
 
   `function (err) { }`
 
-  A simple pass thru of any `error` event from the input data stream.
+  A simple pass thru of any `'error'` event from the input data stream.
 
-* Event: `end`
+* Event: `'end'`
 
   `function () { }`
 
   Emitted when `end()` is called.
 
-* Event: `close`
+* Event: `'close'`
 
   `function (had_error) { }`
 
@@ -238,12 +238,12 @@ properties are recognized:
 
 * `pause()`
 
-  Suspend emitting 'data', 'frame', 'header' or 'part' events. It will also
+  Suspend emitting `'data'`, `'frame'`, `'header'` or `'part'` events. It will also
   call `pause()` on the underlying source stream (`sk` from the constructor).
 
 * `resume()`
 
-  Resume emitting 'data', 'frame', 'header' or 'part' events. It will also
+  Resume emitting `'data'`, `'frame'`, `'header'` or `'part'` events. It will also
   call `resume()` on the underlying `sk` object (from the constructor).
 
 * `pipe(dst)`
@@ -258,8 +258,8 @@ properties are recognized:
 * `end(buf)`
 * `end(str, enc)`
 
-  Stop the `Frap` object from emitting any new 'data', 'frame', 'header' or
-  'part' events and allow any unsent data to drain.
+  Stop the `Frap` object from emitting any new `'data'`, `'frame'`, `'header'` or
+  `'part'` events and allow any unsent data to drain.
 
 * `destroy()`
 
