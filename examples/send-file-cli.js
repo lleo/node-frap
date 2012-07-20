@@ -8,9 +8,9 @@ var fs = require('fs')
 
 var PORT = 6000
 
-Frap.VERBOSE = 1
-Frap.RFrameStream.VERBOSE = 1
-Frap.WFrameStream.VERBOSE = 1
+//Frap.VERBOSE = 1
+//Frap.RFrameStream.VERBOSE = 1
+//Frap.WFrameStream.VERBOSE = 1
 
 var FILENAME, FILESTAT
 try {

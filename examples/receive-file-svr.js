@@ -8,6 +8,10 @@ var fs = require('fs')
 
 var PORT = 6000
 
+//Frap.VERBOSE = 1
+//Frap.RFrameStream.VERBOSE = 1
+//Frap.WFrameStream.VERBOSE = 1
+
 if (process.argv.length !== 3) {
   log("%s <directory>", path.basename(process.argv[1]))
   process.exit(1)
@@ -51,8 +55,10 @@ var svr = net.createServer(PORT, function(sk){
       state = 'filename'
       wstream.destroySoon()
     })
+    
 
-    rstream.pipe(wstream)
+    //rstream.pipe(wstream)
+    rstream.pipe(wstream, {end: false})
   })
 })
 
