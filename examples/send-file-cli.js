@@ -32,24 +32,22 @@ var sk = net.connect(PORT, function(){
   function sendFile(frap, filename, filesize) {
     var rstream = fs.createReadStream(filename)
       , wstream = frap.createWriteStream(filesize)
-  
+
+    rstream.once('end', function(){
+      wstream.destroySoon()
+    })
+
     wstream.once('close', function(){
       log("file, %s, sent", filename)
       log("closing socket")
       sk.end()
     })
-  
+
     rstream.pipe(wstream)
   }
 
-  var sent = frap.sendFrame(namebuf)
-  if (!sent) {
-    frap.once('drain', function(){
-      sendFile(frap, FILENAME, FILESTAT.size)
-    })
-  }
-  else
-    sendFile(frap, FILENAME, FILESTAT.size)
+  frap.sendFrame(namebuf)
+  sendFile(frap, FILENAME, FILESTAT.size)
 })
 
 sk.on('end', function(){ log("good bye") })

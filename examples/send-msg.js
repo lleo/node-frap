@@ -2,13 +2,7 @@
 
 var net = require('net')
   , Frap = require('frap').Frap
-  , cli = {}
-
-Frap.VERBOSE = 1
-Frap.RFrameStream.VERBOSE = 1
-Frap.WFrameStream.VERBOSE = 1
-
-var msg = {cmd: "print", args: ["hello", "world"]}
+  , msg = {cmd: "print", args: ["hello", "world"]}
 
 var sk = net.createConnection(7000, function() {
   var frap = new Frap(sk)
@@ -19,5 +13,5 @@ var sk = net.createConnection(7000, function() {
     sk.end()
   })
 
-  frap.sendFrame(new Buffer(JSON.stringify(msg), 'utf8'))
+  frap.write(JSON.stringify(msg), 'utf8')
 })

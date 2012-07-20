@@ -2,30 +2,23 @@
 
 var net = require('net')
   , Frap = require('frap').Frap
-  , svr = {}
-  , log = console.log
+  , svr
 
-if (process.env['FRAP_VERBOSE']) {
-  Frap.VERBOSE = 1
-  Frap.RFrameStream.VERBOSE = 1
-  Frap.WFrameStream.VERBOSE = 1
-}
+svr = net.createServer().listen(7000)
 
-svr.sk = net.createServer().listen(7000)
-
-svr.sk.on('connection', function(sk){
-  var frap = new Frap(sk, true)
+svr.on('connection', function(sk){
+  var frap = new Frap(sk, {noframes: true})
 
   var id = sk.remoteAddress + ":" + sk.remotePort
-  log("connection:", id)
+  console.log("connection:", id)
 
   frap.pipe(frap)
 
   frap.once('close', function() {
-    log("close:", id)
+    console.log("close:", id)
   })
 
   sk.on('end', function() {
-    log("sk.on 'end':", id)
+    console.log("sk.on 'end':", id)
   })
 })

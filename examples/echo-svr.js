@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 
 var net = require('net')
-  , Frap = require('frap').Frap
-  , svr = {frap: {}}
+  , Frap = require('frap')
+  , svr
 
-svr.sk = net.createServer().listen(7000)
+svr = net.createServer().listen(7000)
 
-svr.sk.on('connection', function(sk){
+svr.on('connection', function(sk){
   var frap = new Frap(sk)
 
   var id = sk.remoteAddress + ":" + sk.remotePort
   console.log("connection:", id)
 
-  frap.on('data', function(buf) {
-    frap.write(buf)
+  frap.on('frame', function(bufs) {
+    frap.sendFrame(bufs)
   })
 
   frap.once('close', function() {
