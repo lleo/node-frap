@@ -16,7 +16,6 @@
                   , "lib/index.js"
                   , "lib/frap.js"
                   , "lib/frap_stream.js"
-                  , "lib/channel.js"
                   , "examples/*" ]
 , "main"        : "lib/index.js"
 , "dependencies": { "dequeue": "1.x"
