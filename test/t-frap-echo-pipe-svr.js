@@ -119,7 +119,7 @@ svr.sk.on('listening', function() {
 
 svr.sk.on('connection', function(sk) {
   var ident = sk.remoteAddress+":"+sk.remotePort
-    , frap = new Frap(sk, true)
+    , frap = new Frap(sk, {noframes: true})
 
   if (VERBOSE) log("%s connected", ident)
 
