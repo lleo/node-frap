@@ -10,6 +10,7 @@ svr.on('connection', function(sk){
   var frap = new Frap(sk, {noframes: true})
 
   var id = sk.remoteAddress + ":" + sk.remotePort
+
   console.log("connection:", id)
 
   frap.pipe(frap)
