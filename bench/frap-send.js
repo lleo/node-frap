@@ -3,9 +3,7 @@
 var net = require('net')
   , assert = require('assert')
   , log = console.log
-  , format = require('util').format
-  , inspect = require('util').inspect
-  , Frap = require('frap')
+  , Frap = require('../')
   , SimpleFrap = require('../lib/simple_frap').SimpleFrap
   , nomnom = require('nomnom')
   , u = require('underscore')
@@ -35,8 +33,8 @@ var opt = nomnom.script('frap-send')
   .option('datasize', {
     abbr: 'z'
   , flag: false
-  , default: 0
-  , help: "add a property to the json object this bytes big; 0 disables"
+  , default: 10
+  , help: "add a property to the json object this bytes big; default 10"
   })
   .option('simple', {
     flag: true
@@ -50,6 +48,8 @@ var opt = nomnom.script('frap-send')
   , help: "don't bother to receive any data"
   })
   .parse()
+
+assert.ok(opt.datasize > 0)
 
 process.on('uncaughtException', function(err){
   log("caught:", err)
