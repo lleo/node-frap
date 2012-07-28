@@ -7,7 +7,7 @@ var net = require('net')
 svr = net.createServer().listen(7000)
 
 svr.on('connection', function(sk){
-  var frap = new Frap(sk, {noframes: true})
+  var frap = new Frap(sk, {emit: 'basic'})
 
   var id = sk.remoteAddress + ":" + sk.remotePort
 
