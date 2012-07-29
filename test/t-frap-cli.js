@@ -4,7 +4,7 @@ var net = require('net')
   , assert = require('assert')
   , log = console.log
   , format = require('util').format
-  , Frap = require('frap').Frap
+  , Frap = require('..')
   , nomnom = require('nomnom')
 
 var VERBOSE=0
@@ -82,7 +82,7 @@ cli.sk = net.connect(cli.port, cli.host, function() {
   cli.frap.on('data', function(buf){
     log(format("cli.frap.on 'data': buf.length=%d;", buf.length))
     var d = Date.now() - t0
-      , tp = (cli.nbufs * cli.bufsz) / (d / 1000) / 1024 
+      , tp = (cli.nbufs * cli.bufsz) / (d / 1000) / 1024
     log("Time-to-recv = %d ms", d)
     log("thruput = %s kB/s", tp.toFixed(2))
 
@@ -144,13 +144,13 @@ if (opt.stats) {
       sk_tm = stats.get('sk recv gap').start()
       stats.get('sk recv size').set(buf.length)
     })
-    
+
     assert(cli.frap, "cli.frap not set")
     stats.createStat('frap recv gap', statsmod.Timer)
     stats.createStat('frap part size', statsmod.Value, {units:'bytes'})
     stats.createHog('frap part size', 'frap part size', statsmod.SemiBytes)
     stats.createHog('frap recv gap', 'frap recv gap', statsmod.SemiLogMS)
-    
+
     var frap_tm, cur_framelen
     cli.frap.on('begin', function(rstream, framelen){
       cur_framelen = framelen

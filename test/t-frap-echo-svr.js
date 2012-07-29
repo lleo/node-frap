@@ -8,7 +8,7 @@ var net = require('net')
   , log = console.log
   , format = util.format
   , inspect = util.inspect
-  , Frap = require('frap').Frap
+  , Frap = require('..')
   , repl = require('repl')
   , nomnom = require('nomnom')
 
@@ -47,7 +47,7 @@ if (opt.stats) {
 
   // Setup stats
   var statsmod = require('stats')
-  
+
   var stats = statsmod.getStats()
   stats.createStat('ttcf', statsmod.Timer) //time-to-complete-frame
   stats.createStat('tbfp', statsmod.Timer)
@@ -126,7 +126,7 @@ svr.sk.on('connection', function(sk) {
         if (buf.length+off !== framelen) //if this is not the last part
           part_done = stats.get('tbfp').start()
       })
-    
+
       var done = stats.get('ttcf').start()
       rstream.on('end', function(buf, off){
         done()

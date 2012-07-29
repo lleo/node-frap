@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var net = require('net')
-  , Frap = require('../')
+  , Frap = require('..')
   , svr
 
 svr = net.createServer().listen(7000)

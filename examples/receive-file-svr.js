@@ -3,7 +3,7 @@
 var fs = require('fs')
   , net = require('net')
   , path = require('path')
-  , Frap = require('../')
+  , Frap = require('..')
   , log = console.log
 
 var PORT = 6000

@@ -4,7 +4,7 @@ var net = require('net')
   , log = console.log
   , util = require('util')
   , format = util.format
-  , frap = require('frap')
+  , frap = require('..')
   , Frap = frap.Frap
   , Channel = frap.Channel
   , nomnom = require('nomnom')
@@ -28,7 +28,7 @@ var opts = nomnom.script('t-chan-svr')
   , help: 'channel topic'
   })
   .parse()
-  
+
 process.on('SIGINT', function () {
   log('caught SIGINT')
   process.exit(0)
@@ -49,7 +49,7 @@ svr.sk.on('connection', function(sk){
   svr.client[ident].sk = sk
   svr.client[ident].chan = new Channel(sk)
   log("new Channel", ident)
-  
+
   svr.client[ident].chan.onAny(function(buf){
     log("topic :", this.event)
     log("msg   :", buf.toString())
