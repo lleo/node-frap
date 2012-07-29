@@ -65,11 +65,11 @@ process.on('SIGINT', function () {
 
 var Frap
 if (opt.simple) {
-  Frap = require('frap').SimpleFrap
+  Frap = require('../').SimpleFrap
   if (VERBOSE>1) Frap.VERBOSE += 1
 }
 else {
-  Frap = require('frap').Frap
+  Frap = require('..')
   if (VERBOSE>1) /* -vv */ Frap.VERBOSE += 1
   if (VERBOSE>2) { //-vvv
     Frap.RFrameStream.VERBOSE += 1

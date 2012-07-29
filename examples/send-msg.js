@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var net = require('net')
-  , Frap = require('../')
+  , Frap = require('..')
   , msg = {cmd: "print", args: ["hello", "world"]}
 
 var sk = net.createConnection(7000, function() {

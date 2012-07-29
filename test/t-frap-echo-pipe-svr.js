@@ -6,8 +6,7 @@ var net = require('net')
   , log = console.log
   , format = util.format
   , inspect = util.inspect
-  , frap = require('frap')
-  , Frap = frap.Frap
+  , Frap = require('..')
   , repl = require('repl')
   , nomnom = require('nomnom')
 
@@ -85,10 +84,10 @@ net.createServer(function(sk){
     , myeval
     , useGlobal=true
     , ignoreUndefined
-  
+
   replobj = repl.start(prompt, sk, myeval, useGlobal, ignoreUndefined)
   replobj.context.root = root
-  
+
 //}).listen(7001)
 }).listen('./t-frap-echo-pipe-svr.repl.sk')
 process.on('exit', function() {
@@ -163,7 +162,7 @@ svr.sk.on('connection', function(sk) {
     })
     frap.on('begin', function(rstream, framelen){
       stats.get('frame_sz').set(framelen)
-      
+
       var ttcf_done = stats.get('ttcf').start()
       rstream.once('end', function(){ ttcf_done() })
 

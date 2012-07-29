@@ -3,7 +3,7 @@
 var fs = require('fs')
   , net = require('net')
   , path = require('path')
-  , Frap = require('frap')
+  , Frap = require('..')
   , log = console.log
 
 var PORT = 6000
@@ -55,7 +55,7 @@ var svr = net.createServer(PORT, function(sk){
       state = 'filename'
       wstream.destroySoon()
     })
-    
+
 
     //rstream.pipe(wstream)
     rstream.pipe(wstream, {end: false})

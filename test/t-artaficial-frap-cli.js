@@ -5,7 +5,7 @@ var net = require('net')
   , util = require('util')
   , format = util.format
   , inspect = util.inspect
-  , frap = require('frap')
+  , frap = require('..')
   , Frap = frap.Frap
   , nomnom = require('nomnom')
 

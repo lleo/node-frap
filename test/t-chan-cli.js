@@ -5,7 +5,7 @@ var net = require('net')
   , util = require('util')
   , format = util.format
   , inspect = util.inspect
-  , frap = require('frap')
+  , frap = require('..')
   , Frap = frap.Frap
   , Channel = frap.Channel
   , nomnom = require('nomnom')
@@ -54,7 +54,7 @@ cli.sk.on('connect', function() {
   cli.chan = new Channel(cli.sk)
 
   cli.chan.send(cli.topic, cli.msg)
-  
+
   cli.chan.on('bye', function(buf){
     log("'bye' msg:", buf.toString())
     delete cli.chan

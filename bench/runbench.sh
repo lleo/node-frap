@@ -36,6 +36,18 @@ sleep 1
 
 kill $SVRPID
 
+#echo-svr.js is hard coded to listen on 7000
+echo "Starting: examples/echo-svr.js"
+./examples/echo-svr.js 2>echo-svr.err >/dev/null &
+SVRPID=$!
+
+sleep 1
+
+./bench/frap-send.js -p $PORT -n $num_frames -z $frame_size --simple
+./bench/frap-send.js -p $PORT -n $num_frames -z $frame_size
+
+kill $SVRPID
+
 sleep 1
 
 echo "Starting: bench/dev-null.js"
