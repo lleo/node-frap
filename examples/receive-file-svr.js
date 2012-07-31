@@ -9,8 +9,8 @@ var fs = require('fs')
 var PORT = 6000
 
 //Frap.VERBOSE = 1
-//Frap.RFrameStream.VERBOSE = 1
-//Frap.WFrameStream.VERBOSE = 1
+//Frap.ReadFrameStream.VERBOSE = 1
+//Frap.WriteFrameStream.VERBOSE = 1
 
 if (process.argv.length !== 3) {
   log("%s <directory>", path.basename(process.argv[1]))
@@ -48,7 +48,7 @@ var svr = net.createServer(PORT, function(sk){
   frap.on('header', function (framelen) {
     if (state !== 'filedata') return
 
-    var rstream = frap.createReadStream(framelen)
+    var rstream = frap.createReadFrameStream(framelen)
 
     var dl_filename = path.join(DL_DIR, filename)
       , wstream = fs.createWriteStream(dl_filename)

@@ -31,7 +31,7 @@ var sk = net.connect(PORT, function(){
 
   function sendFile(frap, filename, filesize) {
     var rstream = fs.createReadStream(filename)
-      , wstream = frap.createWriteStream(filesize)
+      , wstream = frap.createWriteFrameStream(filesize)
 
     rstream.once('end', function(){
       wstream.destroySoon()
