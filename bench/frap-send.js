@@ -16,7 +16,7 @@ var opt = nomnom.script('frap-send')
   , help: 'show more output'
   , callback: function() {
       VERBOSE += 1
-      if (VERBOSE > 1) Frap.VERBOSE += 1
+      if (VERBOSE>1) /* -vv */ Frap.VERBOSE += 1
     }
   })
   .option('port', {
@@ -36,11 +36,6 @@ var opt = nomnom.script('frap-send')
   , flag: false
   , default: 10
   , help: "add a property to the json object this bytes big; default 10"
-  })
-  .option('simple', {
-    flag: true
-  , default: false
-  , help: "use SimpleFrap instead of Frap"
   })
   .option('norecv', {
     abbr: 'R'
@@ -64,15 +59,6 @@ process.on('SIGINT', function () {
 })
 
 log(require('path').basename(process.argv[1]), process.argv.slice(2).join(' '))
-
-var Frap
-if (opt.simple) {
-  Frap = SimpleFrap
-  if (VERBOSE>1) Frap.VERBOSE += 1
-}
-else {
-  if (VERBOSE>1) /* -vv */ Frap.VERBOSE += 1
-}
 
 var gen = (function(){ //just for a closure scope
   var i=0
