@@ -16,6 +16,7 @@ var opt = nomnom.script('frap-send')
   , help: 'show more output'
   , callback: function() {
       VERBOSE += 1
+      if (VERBOSE > 1) Frap.VERBOSE += 1
     }
   })
   .option('port', {
@@ -71,10 +72,6 @@ if (opt.simple) {
 }
 else {
   if (VERBOSE>1) /* -vv */ Frap.VERBOSE += 1
-  if (VERBOSE>2) { //-vvv
-    Frap.RFrameStream.VERBOSE += 1
-    Frap.WFrameStream.VERBOSE += 1
-  }
 }
 
 var gen = (function(){ //just for a closure scope
@@ -90,10 +87,9 @@ process.once('exit', function(){
 })
 
 
-var sk = net.createConnection(opt.port, function() {
+var sk = net.createConnection(opt.port, function()
+{
   var frap = new Frap(sk)
-
-  var start = Date.now()
 
   var bytes_recv = 0
     , bytes_sent = 0
@@ -103,8 +99,7 @@ var sk = net.createConnection(opt.port, function() {
     , t0 = Date.now()
 
   if (!opt.norecv) {
-    frap.on('frame', function(buf){
-      var s = buf.toString('utf8')
+    frap.on('frame', function(bufs){
       nrecv += 1
       if (nrecv === opt.nfrms) {
         TTR = Date.now() - start
@@ -113,29 +108,46 @@ var sk = net.createConnection(opt.port, function() {
     })
   }
 
-  var i=0
+  var i
     , buf = new Buffer(gen(), 'utf8')
-  function send() {
-    var o, str, sent
-    while ( i < opt.nfrms ) {
-      bytes_sent += buf.length + 4
-      i += 1
+    , sent = true
+    , start = Date.now()
 
-      sent = frap.sendFrame(buf)
-      if (!sent) {
-        frap.once('drain', function(){
-          //log("frap drained")
-          nsent += 1
-          send()
-        })
-        return
-      }
-      nsent += 1
-    } //while
-    all_sent = true
+
+  for (i=0; i<opt.nfrms; i++) {
+    sent = frap.write(buf)
+  }
+  if (!sent) {
+    frap.on('drain', function(){
+      TTS = Date.now() - start
+      if (opt.norecv) sk.end()
+    })
+  }
+  else {
     TTS = Date.now() - start
     if (opt.norecv) sk.end()
-  } //send
-
-  send()
+  }
+  //function send() {
+  //  var o, str, sent
+  //  while ( i < opt.nfrms ) {
+  //    bytes_sent += buf.length + 4
+  //    i += 1
+  //
+  //    sent = frap.sendFrame(buf)
+  //    if (!sent) {
+  //      frap.once('drain', function(){
+  //        //log("frap drained")
+  //        nsent += 1
+  //        send()
+  //      })
+  //      return
+  //    }
+  //    nsent += 1
+  //  } //while
+  //  all_sent = true
+  //  TTS = Date.now() - start
+  //  if (opt.norecv) sk.end()
+  //} //send
+  //
+  //send()
 })
