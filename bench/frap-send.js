@@ -6,7 +6,6 @@ var net = require('net')
   , format = require('util').format
   , inspect = require('util').inspect
   , Frap = require('..')
-  , SimpleFrap = require('../lib/simple_frap').SimpleFrap
   , nomnom = require('nomnom')
   , u = require('underscore')
 
