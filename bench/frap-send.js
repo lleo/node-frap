@@ -4,7 +4,6 @@ var net = require('net')
   , assert = require('assert')
   , log = console.log
   , Frap = require('..')
-  , SimpleFrap = require('../lib/simple_frap').SimpleFrap
   , nomnom = require('nomnom')
   , u = require('underscore')
 
