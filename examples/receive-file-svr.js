@@ -45,8 +45,10 @@ var svr = net.createServer(PORT, function(sk){
 
     state = 'filedata'
   })
-  frap.on('header', function (rstream, framelen) {
+  frap.on('header', function (framelen) {
     if (state !== 'filedata') return
+
+    var rstream = frap.createReadStream(framelen)
 
     var dl_filename = path.join(DL_DIR, filename)
       , wstream = fs.createWriteStream(dl_filename)
@@ -56,6 +58,7 @@ var svr = net.createServer(PORT, function(sk){
       wstream.destroySoon()
     })
 
+    wstream.once('close', function() { rstream.resume() })
 
     //rstream.pipe(wstream)
     rstream.pipe(wstream, {end: false})
