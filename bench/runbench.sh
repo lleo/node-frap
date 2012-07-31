@@ -19,7 +19,7 @@ SVRPID=$!
 sleep 1
 
 ./bench/line-send.js -p $PORT -n $num_frames -z $frame_size
-./bench/frap-send.js -p $PORT -n $num_frames -z $frame_size --simple
+#./bench/frap-send.js -p $PORT -n $num_frames -z $frame_size --simple
 ./bench/frap-send.js -p $PORT -n $num_frames -z $frame_size
 
 kill $SVRPID
@@ -31,7 +31,7 @@ SVRPID=$!
 
 sleep 1
 
-./bench/frap-send.js -p $PORT -n $num_frames -z $frame_size --simple
+#./bench/frap-send.js -p $PORT -n $num_frames -z $frame_size --simple
 ./bench/frap-send.js -p $PORT -n $num_frames -z $frame_size
 
 kill $SVRPID
@@ -43,7 +43,6 @@ SVRPID=$!
 
 sleep 1
 
-./bench/frap-send.js -p $PORT -n $num_frames -z $frame_size --simple
 ./bench/frap-send.js -p $PORT -n $num_frames -z $frame_size
 
 kill $SVRPID
@@ -57,7 +56,6 @@ SVRPID=$!
 sleep 1
 
 ./bench/line-send.js -R -p $PORT -n $num_frames -z $frame_size
-./bench/frap-send.js -R -p $PORT -n $num_frames -z $frame_size --simple
 ./bench/frap-send.js -R -p $PORT -n $num_frames -z $frame_size
 
 kill $SVRPID
