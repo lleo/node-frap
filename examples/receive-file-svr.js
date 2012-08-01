@@ -8,10 +8,6 @@ var fs = require('fs')
 
 var PORT = 6000
 
-//Frap.VERBOSE = 1
-//Frap.ReadFrameStream.VERBOSE = 1
-//Frap.WriteFrameStream.VERBOSE = 1
-
 if (process.argv.length !== 3) {
   log("%s <directory>", path.basename(process.argv[1]))
   process.exit(1)

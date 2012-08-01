@@ -12,9 +12,6 @@ svr.on('connection', function(sk){
   var id = sk.remoteAddress + ":" + sk.remotePort
   console.log("connection:", id)
 
-  //frap.on('frame', function(bufs) {
-  //  frap.sendFrame(bufs)
-  //})
   frap.on('data', function(buf) {
     frap.write(buf)
   })
