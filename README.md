@@ -10,7 +10,7 @@ This `Frap` module provides just a framing protocol.
 
 ## Example: Send a JSON object
 
-### [echo-svr.js](exampels/echo-svr.js)
+### [echo-svr.js](examples/echo-svr.js)
 
 ```js
 var svr = net.createServer().listen(7000)
