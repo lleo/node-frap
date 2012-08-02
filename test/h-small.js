@@ -7,6 +7,7 @@ var net = require('net')
   , inspect = require('util').inspect
   , nomnom = require('nomnom')
   , u = require('underscore')
+  , Frap = require('..')
 
 var VERBOSE=0
 var opt = nomnom.script('t-frap-cli')
@@ -62,20 +63,6 @@ process.on('SIGINT', function () {
     log( stats.toString({values: 'both'}) )
   process.nextTick(function(){ process.exit(0) })
 })
-
-var Frap
-if (opt.simple) {
-  Frap = require('../').SimpleFrap
-  if (VERBOSE>1) Frap.VERBOSE += 1
-}
-else {
-  Frap = require('..')
-  if (VERBOSE>1) /* -vv */ Frap.VERBOSE += 1
-  if (VERBOSE>2) { //-vvv
-    Frap.RFrameStream.VERBOSE += 1
-    Frap.WFrameStream.VERBOSE += 1
-  }
-}
 
 var cli = {
   iters: opt.iters

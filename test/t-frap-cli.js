@@ -15,11 +15,6 @@ var opt = nomnom.script('t-frap-cli')
   , help: 'show more output'
   , callback: function() {
     VERBOSE += 1
-    if (VERBOSE>1) {
-      Frap.VERBOSE += 1
-      Frap.RFrameStream.VERBOSE += 1
-      Frap.WFrameStream.VERBOSE += 1
-    }
   }
   })
   .option('host', {

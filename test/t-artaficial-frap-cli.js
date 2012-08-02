@@ -20,7 +20,6 @@ var opts = nomnom.script('t-frap-cli')
   , help: 'show more output'
   , callback: function() {
       VERBOSE += 1
-      if (VERBOSE>1) Frap.VERBOSE++
     }
   })
   .option('port', {

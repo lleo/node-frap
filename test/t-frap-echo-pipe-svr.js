@@ -18,12 +18,6 @@ var opt = nomnom.script('t-frap-echo-pipe-svr')
   , help: 'show more output'
   , callback: function() {
       VERBOSE += 1
-      if (VERBOSE>1) { //if verbose already turned on
-        //enable library verbosity
-        Frap.VERBOSE += 1
-        Frap.RFrameStream.VERBOSE += 1
-        Frap.WFrameStream.VERBOSE += 1
-      }
     }
   })
   .option('port', {

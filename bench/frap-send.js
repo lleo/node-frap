@@ -15,7 +15,6 @@ var opt = nomnom.script('frap-send')
   , help: 'show more output'
   , callback: function() {
       VERBOSE += 1
-      if (VERBOSE>1) /* -vv */ Frap.VERBOSE += 1
     }
   })
   .option('port', {
