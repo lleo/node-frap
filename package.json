@@ -1,6 +1,6 @@
 {
   "name"        : "frap"
-, "version"     : "1.0.0"
+, "version"     : "1.1.0"
 , "description" : "A Socket wrapper that provides simple framing protocol"
 , "keywords"    : ["socket", "frame", "framing", "protocol"]
 , "homepage"    : "https://github.com/lleo/node-frap"
@@ -18,8 +18,10 @@
                   , "lib/frap_stream.js"
                   , "examples/*" ]
 , "main"        : "lib/index.js"
+, "scripts": { "test": "mocha test/T??-*.js" }
 , "dependencies": { "dequeue": "1.x"
                   , "underscore": "1.3.x" }
-, "devDependencies": {}
+, "devDependencies": { "mocha": "1.3.x"
+                     , "chai": "1.1.x" }
 , "engines"     : {"node" : ">=0.4.0"}
 }
