@@ -87,7 +87,7 @@ var sk = net.createConnection(opt.port, function()
       nrecv += 1
       if (nrecv === opt.nfrms) {
         TTR = Date.now() - start
-        sk.end()
+        frap.end()
       }
     })
   }
@@ -104,34 +104,11 @@ var sk = net.createConnection(opt.port, function()
   if (!sent) {
     frap.on('drain', function(){
       TTS = Date.now() - start
-      if (opt.norecv) sk.end()
+      if (opt.norecv) frap.end()
     })
   }
   else {
     TTS = Date.now() - start
-    if (opt.norecv) sk.end()
+    if (opt.norecv) frap.end()
   }
-  //function send() {
-  //  var o, str, sent
-  //  while ( i < opt.nfrms ) {
-  //    bytes_sent += buf.length + 4
-  //    i += 1
-  //
-  //    sent = frap.sendFrame(buf)
-  //    if (!sent) {
-  //      frap.once('drain', function(){
-  //        //log("frap drained")
-  //        nsent += 1
-  //        send()
-  //      })
-  //      return
-  //    }
-  //    nsent += 1
-  //  } //while
-  //  all_sent = true
-  //  TTS = Date.now() - start
-  //  if (opt.norecv) sk.end()
-  //} //send
-  //
-  //send()
 })
