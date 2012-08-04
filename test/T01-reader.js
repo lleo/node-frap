@@ -24,18 +24,6 @@ describe("FrapReader", function(){
       })
 
       describe("#parse", function(){
-        it("the FrapReader should have no entries in the parsedq", function(){
-          expect(rdr.parsedq.length).to.be.equal(0)
-        })
-        it("should not throw an exception", function(){
-          rdr.parse(single_frame)
-        })
-        it("the FrapReader should have two entries in the parsedq", function(){
-          expect(rdr.parsedq.length).to.be.equal(2)
-        })
-      })
-
-      describe("#dispatch", function(){
         var header = sinon.spy()
           , part = sinon.spy()
           , frame = sinon.spy()
@@ -48,14 +36,9 @@ describe("FrapReader", function(){
           rdr.on('data', data)
         })
 
-        it("should call #dispatch without errors", function(){
-          rdr.dispatch() //calls all the stackedup events synchronously
+        it("should not throw an exception", function(){
+          rdr.parse(single_frame)
         })
-
-        it("'header' event should be called", function(){
-          expect(header.called).to.be.true
-        })
-
         it("'header' event should only be called only once", function(){
           expect(header.calledOnce).to.be.true
         })
@@ -162,8 +145,7 @@ describe("FrapReader", function(){
           expect(data.getCall(0).args[0].toString('ascii')).to.be
           .equal("XXXXXXXXXX")
         })
-
-      }) //describe #dispatch
+      }) //describe #parse
     }) //describe parse all at once
 
     describe("parse one byte at a time", function(){
@@ -173,20 +155,6 @@ describe("FrapReader", function(){
       })
 
       describe("#parse", function(){
-        it("the FrapReader should have no entries in the parsedq", function(){
-          expect(rdr.parsedq.length).to.be.equal(0)
-        })
-        it("should not throw an exception", function(){
-          for (var i=0; i<single_frame.length; i++) {
-            rdr.parse( single_frame.slice(i, i+1) )
-          }
-        })
-        it("the FrapReader should have two entries in the parsedq", function(){
-          expect(rdr.parsedq.length).to.be.equal(11)
-        })
-      })
-
-      describe("#dispatch", function(){
         var header = sinon.spy()
           , part = sinon.spy()
           , frame = sinon.spy()
@@ -199,8 +167,10 @@ describe("FrapReader", function(){
           rdr.on('data', data)
         })
 
-        it("should call #dispatch without errors", function(){
-          rdr.dispatch() //calls all the stackedup events synchronously
+        it("should not throw an exception", function(){
+          for (var i=0; i<single_frame.length; i++) {
+            rdr.parse( single_frame.slice(i, i+1) )
+          }
         })
 
         it("'header' event should be called", function(){
@@ -320,7 +290,7 @@ describe("FrapReader", function(){
           .equal("XXXXXXXXXX")
         })
 
-      }) //describe #dispatch
+      }) //describe #parse
     }) //describe byte at a time
   }) //describe single complete frame
 
@@ -342,15 +312,6 @@ describe("FrapReader", function(){
       })
 
       describe("#parse", function(){
-        it("should not throw an exception", function(){
-          assert.strictEqual(rdr.parsedq.length, 0)
-          rdr.parse(triple_frame)
-          assert.strictEqual(rdr.parsedq.length, 6)
-
-        })
-      })
-
-      describe("#dispatch", function(){
         it("should emit 'header' & 'part'; 3 each", function(){
           var header = sinon.spy()
             , part = sinon.spy()
@@ -363,7 +324,7 @@ describe("FrapReader", function(){
           rdr.on('frame', frame)
           rdr.on('data', data)
 
-          rdr.dispatch() //calls all the stackedup events synchronously
+          rdr.parse(triple_frame)
 
           assert.ok(header.called)
           assert.strictEqual(header.callCount, 3)
@@ -408,7 +369,7 @@ describe("FrapReader", function(){
             assert.strictEqual(data.getCall(i).args[0], "XXXXXXXXXX")
           }
         }) //it
-      }) //describe #dispatch
+      }) //describe #parse
     }) //describe parse all at once
 
     describe("parse byte at a time", function(){
@@ -419,16 +380,6 @@ describe("FrapReader", function(){
       })
 
       describe("#parse", function(){
-        it("should not throw an exception", function(){
-          assert.strictEqual(rdr.parsedq.length, 0)
-          for (var i=0; i < triple_frame.length; i++) {
-            rdr.parse( triple_frame.slice(i, i+1) )
-          }
-          assert.strictEqual(rdr.parsedq.length, 33)
-        })
-      })
-
-      describe("#dispatch", function(){
         it("should emit 1 'header' event & 10 'part' events length 1 each", function(){
           var header = sinon.spy()
             , part = sinon.spy()
@@ -441,7 +392,9 @@ describe("FrapReader", function(){
           rdr.on('frame', frame)
           rdr.on('data', data)
 
-          rdr.dispatch() //calls all the stackedup events synchronously
+          for (var i=0; i < triple_frame.length; i++) {
+            rdr.parse( triple_frame.slice(i, i+1) )
+          }
 
           assert.ok(header.called)
           assert.strictEqual(header.callCount, 3)
@@ -487,7 +440,7 @@ describe("FrapReader", function(){
             assert.strictEqual(data.getCall(i).args[0], "XXXXXXXXXX")
           }
         }) //it
-      }) //describe #dispatch
+      }) //describe #parse
     }) //describe byte at a time
 
   }) //describe single complete frame
