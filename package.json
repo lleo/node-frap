@@ -19,7 +19,7 @@
                   , "examples/*"
                   , "test/T??-*.js" ]
 , "main"        : "lib/index.js"
-, "scripts"     : { "test": "mocha test/T??-*.js" }
+, "scripts"     : { "test": "make test" }
 , "dependencies": { "dequeue": "1.x"
                   , "underscore": "1.3.x" }
 , "devDependencies": { "mocha": "1.3.x"
