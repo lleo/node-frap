@@ -91,7 +91,7 @@ cli.sk.on('connect', function() {
       setTimeout(function(){
         if (!cli.ended) {
           cli.ended = true
-          cli.sk.end()
+          cli.frap.end()
         }
       }, 500)
     }

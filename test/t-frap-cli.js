@@ -106,7 +106,7 @@ cli.sk = net.connect(cli.port, cli.host, function() {
     var d = Date.now() - t0
     log("Time-to-send = %d ms", d)
   })
-  cli.frap.sendFrame(bufs)
+  cli.frap.sendFrame.apply(cli.frap, bufs)
   bufs = []
 })
 

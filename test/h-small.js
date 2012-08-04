@@ -111,17 +111,17 @@ cli.sk = net.createConnection(opt.port, function() {
       if (cli.recv % fract === 0) log("%s> cli.recv = %d", cli.id, cli.recv)
     }
     if (cli.recv === cli.iters) {
-      //log("%s> received all sent: %d === %d; calling sk.end()", cli.id, cli.sent, cli.iters)
+      //log("%s> received all sent: %d === %d; calling frap.end()", cli.id, cli.sent, cli.iters)
       log("bytes per second: %d", cli.tot / ((Date.now()-t0)/1000))
-      cli.sk.end()
+      cli.frap.end()
     }
   }
   cli.frap.on('data', onData)
 
   function onError(err){
     log("%s> error:", cli.id, err)
-    log("%s> calling sk.end() in frap.on('error', ...)", cli.id)
-    cli.sk.end()
+    log("%s> calling frap.end() in frap.on('error', ...)", cli.id)
+    cli.frap.end()
   }
   cli.frap.on('error', onError)
 
