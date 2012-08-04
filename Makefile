@@ -1,4 +1,8 @@
 
+
+test: .PHONY
+	mocha test/T??-*.js
+
 bench: bench-large bench-medium bench-small
 
 bench-large:
@@ -12,3 +16,5 @@ bench-small:
 
 clean:
 	@rm *.err
+
+.PHONY:
