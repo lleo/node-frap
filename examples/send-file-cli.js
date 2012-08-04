@@ -36,7 +36,7 @@ var sk = net.connect(PORT, function(){
     wstream.once('close', function(){
       log("file, %s, sent", filename)
       log("closing socket")
-      sk.end()
+      frap.end()
     })
 
     rstream.pipe(wstream)
