@@ -122,16 +122,18 @@ properties are recognized:
 ### Properties
 
 * `draining`
+
   Set `true` when waiting for a `'drain'` event.
 
 * `writing`
   Set `true` if `this.draining` or a `WriteFrameStream` is active.
+
 ### Events
 
 * Event: `'data'`
 
   `function (buf) { }`
-  
+
   Where `buf` is a single Buffer object.
 
   `'data'` events are the same as `'frame'` events except that they have
@@ -163,6 +165,10 @@ properties are recognized:
 
   Emitted when a header is encountered in the input stream.
 
+  Typically you only listen to this event when you want to treat an incoming
+  frame as a stream. You do that by calling `createReadFrameStream()` inside
+  the handler for this event.
+
 * Event: `'part'`
 
   `function (buf, pos, framelen) { }`
@@ -170,6 +176,8 @@ properties are recognized:
   Emitted for each buffer in the input stream. `pos` is the position where
   the buffer starts within the _frame_. `framelen` is for the current
   processing frame.
+
+  Typically end users do not listen to this event.
 
 * Event: `'drain'`
 
@@ -195,40 +203,27 @@ properties are recognized:
 
   Emitted when `destroy()` is called.
 
-### FrapReader (Frap inherits from FrapReader)
-
-* `digest(buf)`
-  Parse and Dispatch buffer.
-
-* `parse(buf)`
-  Parse Buffer, `buf`, queueing up events in `this.parsedq`.
-
-* `dispatch()`
-  Emit each event in the `this.parsedq`. Return `true` if all parsed events
-  were dispatched, `false` otherwise.
-
 ### Frap Methods
 
-* `sendFrame(bufs)`
 * `sendFrame(buf0, buf1, ..., bufN)`
 
-  `bufs` may be an array of `Buffer` objects, or `buf0, buf1, ..., bufN` are
-  `Buffer` objects. The lengths of these buffers are summed to determine the
-  _frame_ length.
+  Arguments `buf0, buf1, ..., bufN` are `Buffer` objects. The lengths of these
+  buffers are summed to determine the _frame_ length.
 
   This is can be more efficient than concatenating these buffers and using
   `write()` to send the whole large buffer as one frame.
 
 ### Stream Methods
 
-* `setEncoding(enc)`
-  Inherited from FrapReader. All 'data' events will be converted from `Buffer`
-  to `String` via `Buffer#toString(enc)`.
-
 * `write(buf)`
 * `write(str, enc)`
 
   Write a new _frame_ with `buf.length` as the _frame_ length.
+
+* `setEncoding(enc)`
+
+  Inherited from FrapReader. All 'data' events will be converted from `Buffer`
+  to `String` via `Buffer#toString(enc)`.
 
 * `pause()`
 
@@ -280,3 +275,10 @@ properties are recognized:
 
   Create and return a WFrameStream object. Only one may exist at a time for
   each `Frap` object, otherwise it will throw an `AssertionError`.
+
+### FrapReader (Frap inherits from FrapReader)
+
+* `parse(buf)`
+
+  Parse Buffer, `buf`, and emit resulting `'data'`, `'frame'`, `'header'`, and
+  `'part'` events.
