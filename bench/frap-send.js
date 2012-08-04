@@ -92,23 +92,37 @@ var sk = net.createConnection(opt.port, function()
     })
   }
 
-  var i
+  var i=0
     , buf = new Buffer(gen(), 'utf8')
     , sent = true
     , start = Date.now()
 
-
-  for (i=0; i<opt.nfrms; i++) {
-    sent = frap.write(buf)
-  }
-  if (!sent) {
-    frap.on('drain', function(){
+  //for (i=0; i<opt.nfrms; i++) {
+  //  sent = frap.write(buf)
+  //}
+  //if (!sent) {
+  //  frap.on('drain', function(){
+  //    TTS = Date.now() - start
+  //    if (opt.norecv) frap.end()
+  //  })
+  //}
+  //else {
+  //  TTS = Date.now() - start
+  //  if (opt.norecv) frap.end()
+  //}
+  function send() {
+    var nsent=0
+    sent=true
+    while (sent && i<opt.nfrms) {
+      i += 1; nsent += 1
+      sent = frap.write(buf)
+    }
+    //log("nsent=%d",nsent)
+    if (i<opt.nfrms) frap.once('drain', send)
+    else {
       TTS = Date.now() - start
       if (opt.norecv) frap.end()
-    })
+    }
   }
-  else {
-    TTS = Date.now() - start
-    if (opt.norecv) frap.end()
-  }
+  send()
 })
