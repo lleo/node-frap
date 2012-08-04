@@ -42,7 +42,7 @@ describe("Frap send/recv frame", function(){
 
     send_msg = {hello: 'world'}
     var buf = new Buffer(JSON.stringify(send_msg), 'utf8')
-    frap.sendFrame([buf])
+    frap.sendFrame(buf)
   })
 
   it("recv_msg should equal send_msg", function(){
