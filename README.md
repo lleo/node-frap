@@ -123,10 +123,12 @@ properties are recognized:
 
 * `draining`
 
-  Set `true` when waiting for a `'drain'` event.
+  Has value `true` when waiting for a `'drain'` event, `false` otherwise.
 
 * `writing`
-  Set `true` if `this.draining` or a `WriteFrameStream` is active.
+
+  Has value `true` if `this.draining` or a `WriteFrameStream` is active,
+  `false` otherwise.
 
 ### Events
 
