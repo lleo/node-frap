@@ -1,3 +1,4 @@
+[![build status](https://secure.travis-ci.org/lleo/node-frap.png)](http://travis-ci.org/lleo/node-frap)
 Frap - Framing Wrapper
 ======================
 
