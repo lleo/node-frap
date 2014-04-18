@@ -4,7 +4,7 @@ this *Problem*/*Solution* section.)
 ## Problem
 
 When your _sender_ writes a series of buffers to a socket, the _receiver_
-receives data by way of on, or more, `'data'` socket events; each event with a
+receives data by way of one, or more, `'data'` socket events; each event with a
 single `Buffer` as the event input. Each received Buffer is not guaranteed to
 be just one of the _sender_'s socket `write()` calls worth of data, or even an
 integer number of the _sender_'s `write()` data. Sockets just guarantee the
